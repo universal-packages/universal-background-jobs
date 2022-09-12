@@ -52,7 +52,7 @@ Additionally takes the following ones:
 - `identifier` `String`
   This will be prepended to all redis keys used internally to handle the queue, so one can debug easier.
 - `jobsDirectory` `String`
-  Where all job files are, all files should append a `.job` extension ex: `Later.job.js`.
+  Where all job files are, all files should prepend a `.job` prefix, ex: `Later.job.js`.
 
 # BaseJob
 
