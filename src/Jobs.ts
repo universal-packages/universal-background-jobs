@@ -47,6 +47,6 @@ export default class Jobs extends EventEmitter {
 
   private async performLater(item: JobItem, options?: { at?: Date; wait?: string }): Promise<void> {
     await this.redisQueue.enqueue(item, item.queue, options)
-    this.emit('enqueued', item)
+    this.emit('enqueued', { item })
   }
 }

@@ -30,25 +30,29 @@ describe('BackgroundJobs', (): void => {
     expect(perfomedMock.mock.calls).toEqual([
       [
         {
-          payload: { good: true },
-          srcFile: expect.stringMatching(/__fixtures__\/jobs\/Good.job.ts/),
-          name: 'GoodJob',
-          maxRetries: 5,
-          queue: 'default',
-          retryAfter: '1 minute'
-        },
-        expect.any(Measurement)
+          jobItem: {
+            payload: { good: true },
+            srcFile: expect.stringMatching(/__fixtures__\/jobs\/Good.job.ts/),
+            name: 'GoodJob',
+            maxRetries: 5,
+            queue: 'default',
+            retryAfter: '1 minute'
+          },
+          measurement: expect.any(Measurement)
+        }
       ],
       [
         {
-          payload: { excelet: true },
-          srcFile: expect.stringMatching(/__fixtures__\/jobs\/Excelent.job.ts/),
-          name: 'ExelectJob',
-          maxRetries: 5,
-          queue: 'default',
-          retryAfter: '1 minute'
-        },
-        expect.any(Measurement)
+          jobItem: {
+            payload: { excelet: true },
+            srcFile: expect.stringMatching(/__fixtures__\/jobs\/Excelent.job.ts/),
+            name: 'ExelectJob',
+            maxRetries: 5,
+            queue: 'default',
+            retryAfter: '1 minute'
+          },
+          measurement: expect.any(Measurement)
+        }
       ]
     ])
 
@@ -81,13 +85,13 @@ describe('BackgroundJobs', (): void => {
     await worker.release()
 
     expect(perfomedMock.mock.calls).toEqual([
-      [expect.objectContaining({ name: 'PriorityAJob' }), expect.any(Measurement)],
-      [expect.objectContaining({ name: 'PriorityBJob' }), expect.any(Measurement)],
-      [expect.objectContaining({ name: 'PriorityBJob' }), expect.any(Measurement)],
-      [expect.objectContaining({ name: 'PriorityBJob' }), expect.any(Measurement)],
-      [expect.objectContaining({ name: 'PriorityAJob' }), expect.any(Measurement)],
-      [expect.objectContaining({ name: 'PriorityBJob' }), expect.any(Measurement)],
-      [expect.objectContaining({ name: 'PriorityAJob' }), expect.any(Measurement)]
+      [{ jobItem: expect.objectContaining({ name: 'PriorityAJob' }), measurement: expect.any(Measurement) }],
+      [{ jobItem: expect.objectContaining({ name: 'PriorityBJob' }), measurement: expect.any(Measurement) }],
+      [{ jobItem: expect.objectContaining({ name: 'PriorityBJob' }), measurement: expect.any(Measurement) }],
+      [{ jobItem: expect.objectContaining({ name: 'PriorityBJob' }), measurement: expect.any(Measurement) }],
+      [{ jobItem: expect.objectContaining({ name: 'PriorityAJob' }), measurement: expect.any(Measurement) }],
+      [{ jobItem: expect.objectContaining({ name: 'PriorityBJob' }), measurement: expect.any(Measurement) }],
+      [{ jobItem: expect.objectContaining({ name: 'PriorityAJob' }), measurement: expect.any(Measurement) }]
     ])
   })
 
@@ -113,62 +117,70 @@ describe('BackgroundJobs', (): void => {
 
     expect(retryMock.mock.calls).toEqual([
       [
-        expect.objectContaining({
-          name: 'FailingJob',
-          maxRetries: 3,
-          queue: 'default',
-          retryAfter: '1 second',
-          error: {
-            message: 'Job "perform" method not implemented',
-            stack: expect.any(String)
-          },
-          retries: 1
-        }),
-        expect.any(Measurement)
+        {
+          jobItem: expect.objectContaining({
+            name: 'FailingJob',
+            maxRetries: 3,
+            queue: 'default',
+            retryAfter: '1 second',
+            error: {
+              message: 'Job "perform" method not implemented',
+              stack: expect.any(String)
+            },
+            retries: 1
+          }),
+          measurement: expect.any(Measurement)
+        }
       ],
       [
-        expect.objectContaining({
-          name: 'FailingJob',
-          maxRetries: 3,
-          queue: 'default',
-          retryAfter: '1 second',
-          error: {
-            message: 'Job "perform" method not implemented',
-            stack: expect.any(String)
-          },
-          retries: 2
-        }),
-        expect.any(Measurement)
+        {
+          jobItem: expect.objectContaining({
+            name: 'FailingJob',
+            maxRetries: 3,
+            queue: 'default',
+            retryAfter: '1 second',
+            error: {
+              message: 'Job "perform" method not implemented',
+              stack: expect.any(String)
+            },
+            retries: 2
+          }),
+          measurement: expect.any(Measurement)
+        }
       ],
       [
-        expect.objectContaining({
-          name: 'FailingJob',
-          maxRetries: 3,
-          queue: 'default',
-          retryAfter: '1 second',
-          error: {
-            message: 'Job "perform" method not implemented',
-            stack: expect.any(String)
-          },
-          retries: 3
-        }),
-        expect.any(Measurement)
+        {
+          jobItem: expect.objectContaining({
+            name: 'FailingJob',
+            maxRetries: 3,
+            queue: 'default',
+            retryAfter: '1 second',
+            error: {
+              message: 'Job "perform" method not implemented',
+              stack: expect.any(String)
+            },
+            retries: 3
+          }),
+          measurement: expect.any(Measurement)
+        }
       ]
     ])
     expect(failedMock.mock.calls).toEqual([
       [
-        expect.objectContaining({
-          name: 'FailingJob',
-          maxRetries: 3,
-          queue: 'default',
-          retryAfter: '1 second',
-          error: {
-            message: 'Job "perform" method not implemented',
-            stack: expect.any(String)
-          },
-          retries: 3
-        }),
-        expect.any(Measurement)
+        {
+          jobItem: expect.objectContaining({
+            name: 'FailingJob',
+            maxRetries: 3,
+            queue: 'default',
+            retryAfter: '1 second',
+            error: {
+              message: 'Job "perform" method not implemented',
+              stack: expect.any(String)
+            },
+            retries: 3
+          }),
+          measurement: expect.any(Measurement)
+        }
       ]
     ])
   })

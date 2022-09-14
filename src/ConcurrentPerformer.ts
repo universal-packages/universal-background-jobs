@@ -59,7 +59,7 @@ export default class ConcurrentPerformer extends EventEmitter {
 
           const measurement = mesaurer.finish()
 
-          this.emit('performed', jobItem, measurement)
+          this.emit('performed', { jobItem, measurement })
         } catch (error) {
           const measurement = mesaurer.finish()
 
@@ -73,13 +73,13 @@ export default class ConcurrentPerformer extends EventEmitter {
 
             await this.options.redisQueue.enqueue(jobItem, jobItem.queue, { wait: jobItem.retryAfter })
 
-            this.emit('retry', jobItem, measurement)
+            this.emit('retry', { jobItem, measurement })
           } else {
-            this.emit('failed', jobItem, measurement)
+            this.emit('failed', { jobItem, measurement })
           }
         }
       } else {
-        this.emit('error', new Error('No Job class loadaded to perform this job'), jobItem)
+        this.emit('error', { error: new Error('No Job class loadaded to perform this job'), jobItem })
       }
       this.processedInRound++
 
