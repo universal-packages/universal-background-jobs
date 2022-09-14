@@ -79,7 +79,7 @@ export default class ConcurrentPerformer extends EventEmitter {
           }
         }
       } else {
-        this.emit('error', jobItem)
+        this.emit('error', new Error('No Job class loadaded to perform this job'), jobItem)
       }
       this.processedInRound++
 

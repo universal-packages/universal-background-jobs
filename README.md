@@ -120,6 +120,29 @@ Additionally takes the following ones:
 - `waitTimeIfEmptyRound` `number` `default: 1000`
   In milliseconds how much to wait if there is nothing to perform, so the pulling is not so aggressive trying to get jobs to perform.
 
+## Events
+
+Events will be emited while background jobs do its job ;).
+
+### Jobs
+
+Jobs will emit every time a job has been enqueued
+
+```js
+jobs.on('enqueued' (item) => console.log(item))
+```
+
+### Worker
+
+Worker will emit a series of events regarding the status of jobs being performed.
+
+```js
+jobs.on('performed', (item, measurement) => console.log(item, measurement))
+jobs.on('retry', (item, measurement) => console.log(item, measurement))
+jobs.on('failed', (item, measurement) => console.log(item, measurement))
+jobs.on('error', (error, item) => console.log(error, item))
+```
+
 ## Typescript
 
 This library is developed in TypeScript and shipped fully typed.
