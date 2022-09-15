@@ -14,7 +14,7 @@ export default class Worker extends Jobs {
     this.options = { concurrentPerformers: 1, queuePriority: {}, ...options }
   }
 
-  public async start(): Promise<void> {
+  public async run(): Promise<void> {
     const startPromises: Promise<void>[] = []
 
     this.startCronJobs()

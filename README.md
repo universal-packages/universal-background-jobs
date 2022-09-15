@@ -98,7 +98,7 @@ await worker.prepare() // Connects redis queue and load jobs.
 
 await DeleteFlagedUsersJob.performLater({ count: 10 }) // Enqueue job to be performed later
 
-await worker.start()
+await worker.run()
 
 // DeleteFlagedUsersJob will be performed now
 

@@ -20,7 +20,7 @@ describe('BackgroundJobs', (): void => {
     await GoodJob.performLater({ good: true })
     await ExelectJob.performLater({ excelet: true })
 
-    await worker.start()
+    await worker.run()
 
     await sleep(200)
 
@@ -77,7 +77,7 @@ describe('BackgroundJobs', (): void => {
     await PriorityBJob.performLater({ B: true })
     await PriorityBJob.performLater({ B: true })
 
-    await worker.start()
+    await worker.run()
 
     await sleep(1000)
 
@@ -108,7 +108,7 @@ describe('BackgroundJobs', (): void => {
 
     await FailingJob.performLater()
 
-    await worker.start()
+    await worker.run()
 
     await sleep(3500)
 
@@ -191,7 +191,7 @@ describe('BackgroundJobs', (): void => {
     await worker.prepare()
     await worker.redisQueue.clear()
 
-    await worker.start()
+    await worker.run()
 
     await sleep(1100)
 
