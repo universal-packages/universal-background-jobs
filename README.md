@@ -129,7 +129,7 @@ Events will be emited while background jobs do its job ;).
 Jobs will emit every time a job has been enqueued
 
 ```js
-jobs.on('enqueued' ({jobItem}) => console.log(jobItem))
+jobs.on('enqueued', ({ jobItem }) => console.log(jobItem))
 ```
 
 ### Worker
@@ -137,10 +137,10 @@ jobs.on('enqueued' ({jobItem}) => console.log(jobItem))
 Worker will emit a series of events regarding the status of jobs being performed.
 
 ```js
-jobs.on('performed', {(jobItem, measurement}) => console.log(jobItem, measurement))
-jobs.on('retry', ({jobItem, measurement}) => console.log(jobItem, measurement))
-jobs.on('failed', ({jobItem, measurement}) => console.log(jobItem, measurement))
-jobs.on('error', ({error, jobItem}) => console.log(error, jobItem))
+jobs.on('performed', ({ jobItem, measurement }) => console.log(jobItem, measurement))
+jobs.on('retry', ({ jobItem, measurement }) => console.log(jobItem, measurement))
+jobs.on('failed', ({ jobItem, measurement }) => console.log(jobItem, measurement))
+jobs.on('error', ({ error, jobItem }) => console.log(error, jobItem))
 ```
 
 ## Typescript
