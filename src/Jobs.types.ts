@@ -7,7 +7,7 @@ export type PerfromLaterFunction = (data: Record<string, any>, options?: { at?: 
 export interface JobsOptions extends RedisClientOptions {
   client?: RedisClientType<RedisModules, RedisFunctions, RedisScripts>
   identifier?: string
-  jobsDirectory: string
+  jobsLocation: string
 }
 
 export interface JobItem {

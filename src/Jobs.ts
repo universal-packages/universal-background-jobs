@@ -27,7 +27,7 @@ export default class Jobs extends EventEmitter {
   }
 
   public async loadJobs(directory?: string, conventionPrefix = 'job'): Promise<void> {
-    const modules = await loadModules(directory || this.options.jobsDirectory, { conventionPrefix })
+    const modules = await loadModules(directory || this.options.jobsLocation, { conventionPrefix })
 
     for (let i = 0; i < modules.length; i++) {
       const currentModule = modules[i]

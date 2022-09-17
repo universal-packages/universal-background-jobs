@@ -10,7 +10,7 @@ import ScheduledJob from './__fixtures__/schedule/Scheduled.job'
 describe('BackgroundJobs', (): void => {
   it('loads jobs and enable them to enqueue jobs for later and processthem via worker', async (): Promise<void> => {
     const perfomedMock = jest.fn()
-    const worker = new Worker({ jobsDirectory: './tests/__fixtures__/jobs', waitTimeIfEmptyRound: 0 })
+    const worker = new Worker({ jobsLocation: './tests/__fixtures__/jobs', waitTimeIfEmptyRound: 0 })
 
     await worker.prepare()
     await worker.redisQueue.clear()
@@ -62,7 +62,7 @@ describe('BackgroundJobs', (): void => {
 
   it('prioretize by follow a queue prorety object', async (): Promise<void> => {
     const perfomedMock = jest.fn()
-    const worker = new Worker({ jobsDirectory: './tests/__fixtures__/priority', waitTimeIfEmptyRound: 0, queuePriority: { low: 1, high: 3 } })
+    const worker = new Worker({ jobsLocation: './tests/__fixtures__/priority', waitTimeIfEmptyRound: 0, queuePriority: { low: 1, high: 3 } })
 
     await worker.prepare()
     await worker.redisQueue.clear()
@@ -98,7 +98,7 @@ describe('BackgroundJobs', (): void => {
   it('retries if a job fails as per configured', async (): Promise<void> => {
     const retryMock = jest.fn()
     const failedMock = jest.fn()
-    const worker = new Worker({ jobsDirectory: './tests/__fixtures__/failing', waitTimeIfEmptyRound: 0 })
+    const worker = new Worker({ jobsLocation: './tests/__fixtures__/failing', waitTimeIfEmptyRound: 0 })
 
     await worker.prepare()
     await worker.redisQueue.clear()
@@ -186,7 +186,7 @@ describe('BackgroundJobs', (): void => {
   })
 
   it('schedules the job if self configured', async (): Promise<void> => {
-    const worker = new Worker({ jobsDirectory: './tests/__fixtures__/schedule', waitTimeIfEmptyRound: 0 })
+    const worker = new Worker({ jobsLocation: './tests/__fixtures__/schedule', waitTimeIfEmptyRound: 0 })
 
     await worker.prepare()
     await worker.redisQueue.clear()
@@ -203,7 +203,7 @@ describe('BackgroundJobs', (): void => {
 
   it('throws if a job has an error at loading', async (): Promise<void> => {
     let error: Error
-    const worker = new Worker({ jobsDirectory: './tests/__fixtures__/load-error', waitTimeIfEmptyRound: 0 })
+    const worker = new Worker({ jobsLocation: './tests/__fixtures__/load-error', waitTimeIfEmptyRound: 0 })
 
     try {
       await worker.prepare()
