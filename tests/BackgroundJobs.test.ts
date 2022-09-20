@@ -1,24 +1,24 @@
 import { Measurement, sleep } from '@universal-packages/time-measurer'
 import { Worker } from '../src'
 import FailingJob from './__fixtures__/failing/Failing.job'
-import ExelectJob from './__fixtures__/jobs/Excelent.job'
+import ExcellentJob from './__fixtures__/jobs/Excellent.job'
 import GoodJob from './__fixtures__/jobs/Good.job'
 import PriorityAJob from './__fixtures__/priority/PriorityA.job'
 import PriorityBJob from './__fixtures__/priority/PriorityB.job'
 import ScheduledJob from './__fixtures__/schedule/Scheduled.job'
 
 describe('BackgroundJobs', (): void => {
-  it('loads jobs and enable them to enqueue jobs for later and processthem via worker', async (): Promise<void> => {
-    const perfomedMock = jest.fn()
+  it('loads jobs and enable them to enqueue jobs for later and process them via worker', async (): Promise<void> => {
+    const performedMock = jest.fn()
     const worker = new Worker({ jobsLocation: './tests/__fixtures__/jobs', waitTimeIfEmptyRound: 0 })
 
     await worker.prepare()
     await worker.redisQueue.clear()
 
-    worker.on('performed', perfomedMock)
+    worker.on('performed', performedMock)
 
     await GoodJob.performLater({ good: true })
-    await ExelectJob.performLater({ excelet: true })
+    await ExcellentJob.performLater({ excellent: true })
 
     await worker.run()
 
@@ -27,7 +27,7 @@ describe('BackgroundJobs', (): void => {
     await worker.stop()
     await worker.release()
 
-    expect(perfomedMock.mock.calls).toEqual([
+    expect(performedMock.mock.calls).toEqual([
       [
         {
           jobItem: {
@@ -44,9 +44,9 @@ describe('BackgroundJobs', (): void => {
       [
         {
           jobItem: {
-            payload: { excelet: true },
-            srcFile: expect.stringMatching(/__fixtures__\/jobs\/Excelent.job.ts/),
-            name: 'ExelectJob',
+            payload: { excellent: true },
+            srcFile: expect.stringMatching(/__fixtures__\/jobs\/Excellent.job.ts/),
+            name: 'ExcellentJob',
             maxRetries: 5,
             queue: 'default',
             retryAfter: '1 minute'
@@ -57,17 +57,17 @@ describe('BackgroundJobs', (): void => {
     ])
 
     expect(GoodJob.performJestFn).toHaveBeenCalledWith({ good: true })
-    expect(ExelectJob.performJestFn).toHaveBeenCalledWith({ excelet: true })
+    expect(ExcellentJob.performJestFn).toHaveBeenCalledWith({ excellent: true })
   })
 
-  it('prioretize by follow a queue prorety object', async (): Promise<void> => {
-    const perfomedMock = jest.fn()
+  it('prioritize by follow a queue property object', async (): Promise<void> => {
+    const performedMock = jest.fn()
     const worker = new Worker({ jobsLocation: './tests/__fixtures__/priority', waitTimeIfEmptyRound: 0, queuePriority: { low: 1, high: 3 } })
 
     await worker.prepare()
     await worker.redisQueue.clear()
 
-    worker.on('performed', perfomedMock)
+    worker.on('performed', performedMock)
 
     await PriorityAJob.performLater({ A: true })
     await PriorityAJob.performLater({ A: true })
@@ -84,7 +84,7 @@ describe('BackgroundJobs', (): void => {
     await worker.stop()
     await worker.release()
 
-    expect(perfomedMock.mock.calls).toEqual([
+    expect(performedMock.mock.calls).toEqual([
       [{ jobItem: expect.objectContaining({ name: 'PriorityAJob' }), measurement: expect.any(Measurement) }],
       [{ jobItem: expect.objectContaining({ name: 'PriorityBJob' }), measurement: expect.any(Measurement) }],
       [{ jobItem: expect.objectContaining({ name: 'PriorityBJob' }), measurement: expect.any(Measurement) }],
