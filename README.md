@@ -19,7 +19,7 @@ Interface to use to prepare everything, this is preparing a redis queue to be us
 
 ```js
 import { Jobs } from '@universal-packages/background-jobs'
-import DeleteFlagedUsersJob from './src/jobs/DeleteFlagedUsers.job'
+import DeleteFlaggedUsersJob from './src/jobs/DeleteFlaggedUsers.job'
 
 const jobs = new Jobs({ identifier: 'app-jobs', jobsDirectory: './src/jobs' })
 
@@ -36,7 +36,7 @@ import { BaseJob } from '@universal-packages/background-jobs'
 
 export default class DeleteFlagedUsersJob extends BaseJob {
   async perform(params) {
-    deleteFlagedUsers(params.count)
+    deleteFlaggedUsers(params.count)
   }
 }
 ```
@@ -76,7 +76,7 @@ export default class DeleteFlagedUsersJob extends BaseJob {
 ## Static options
 
 - `schedule` `{ cronTime: String, timeZone?: String }`
-  If present the job will be enqueued using a cron, it requires a cronTime format string for cron to trigger the enqueuement.
+  If present the job will be enqueued using a cron, it requires a cronTime format string for cron to trigger the enqueueing.
 - `maxRetries` `Number` `default: 5`
   If the job fails, how many times re-try to run it before failing once and for all.
 - `retryAfter` `String` `default: 1 minute`
@@ -122,7 +122,7 @@ Additionally takes the following ones:
 
 ## Events
 
-Events will be emited while background jobs do its job ;).
+Events will be emitted while background jobs do its job ;).
 
 ### Jobs
 
@@ -149,7 +149,7 @@ This library is developed in TypeScript and shipped fully typed.
 
 ## Contributing
 
-The development of this library in the open on GitHub, and we are grateful to the community for contributing bugfixes and improvements. Read below to learn how you can take part in improving this library.
+The development of this library happens in the open on GitHub, and we are grateful to the community for contributing bugfixes and improvements. Read below to learn how you can take part in improving this library.
 
 - [Code of Conduct](./CODE_OF_CONDUCT.md)
 - [Contributing Guide](./CONTRIBUTING.md)

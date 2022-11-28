@@ -40,11 +40,11 @@ export default class ConcurrentPerformer extends EventEmitter {
     if (this.lastRoundWasEmpty) {
       await sleep(this.options.waitTimeIfEmptyRound)
 
-      // If after the iddle sleep we encounter an stopping directive we do not continue
+      // If after the idle sleep we encounter an stopping directive we do not continue
       if (this.stopping) return
     }
 
-    const mesaurer = startMeasurement()
+    const measurer = startMeasurement()
     const queueItem = await this.options.redisQueue.dequeue(this.currentQueue)
 
     if (queueItem) {
@@ -57,11 +57,11 @@ export default class ConcurrentPerformer extends EventEmitter {
 
           await jobInstance.perform(jobItem.payload)
 
-          const measurement = mesaurer.finish()
+          const measurement = measurer.finish()
 
           this.emit('performed', { jobItem, measurement })
         } catch (error) {
-          const measurement = mesaurer.finish()
+          const measurement = measurer.finish()
 
           // Jobs can be re-enqueued if it was configured
           const shouldRetry = (jobItem.retries || 0) < jobItem.maxRetries
@@ -79,7 +79,7 @@ export default class ConcurrentPerformer extends EventEmitter {
           }
         }
       } else {
-        this.emit('error', { error: new Error('No Job class loadaded to perform this job'), jobItem })
+        this.emit('error', { error: new Error('No Job class loaded to perform this job'), jobItem })
       }
       this.processedInRound++
 

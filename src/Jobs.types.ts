@@ -2,7 +2,7 @@ import { RedisClientOptions, RedisClientType, RedisFunctions, RedisModules, Redi
 import BaseJob from './BaseJob'
 
 export type JobStatus = 'waiting' | 'failed' | 'performed'
-export type PerfromLaterFunction = (data: Record<string, any>, options?: { at?: Date; wait?: string }) => Promise<void> | void
+export type PerformLaterFunction = (data: Record<string, any>, options?: { at?: Date; wait?: string }) => Promise<void> | void
 
 export interface JobsOptions extends RedisClientOptions {
   client?: RedisClientType<RedisModules, RedisFunctions, RedisScripts>
