@@ -13,7 +13,7 @@ npm install @universal-packages/background-jobs
 npm install redis
 ```
 
-# Jobs
+## Jobs
 
 Interface to use to prepare everything, this is preparing a redis queue to be used to store jobs and be retrieved later by the [Worker](#worker), internally prepare all job files to be able to enqueue themselves using the function `performLater`.
 
@@ -25,23 +25,23 @@ const jobs = new Jobs({ identifier: 'app-jobs', jobsDirectory: './src/jobs' })
 
 await jobs.prepare() // Connects redis queue and load jobs.
 
-await DeleteFlagedUsersJob.performLater({ count: 10 }) // Enqueue job to be performed later
+await DeleteFlaggedUsersJob.performLater({ count: 10 }) // Enqueue job to be performed later
 
 await jobs.release()
 ```
 
 ```js
-// DeleteFlagedUsers.job.js|ts
+// DeleteFlaggedUsers.job.js|ts
 import { BaseJob } from '@universal-packages/background-jobs'
 
-export default class DeleteFlagedUsersJob extends BaseJob {
+export default class DeleteFlaggedUsersJob extends BaseJob {
   async perform(params) {
     deleteFlaggedUsers(params.count)
   }
 }
 ```
 
-## Options
+### Options
 
 `Jobs` takes the same [options](https://github.com/redis/node-redis/blob/master/docs/client-configuration.md) as the redis client.
 
@@ -54,7 +54,25 @@ Additionally takes the following ones:
 - `jobsDirectory` `String`
   Where all job files are, all files should prepend a `.job` prefix, ex: `Later.job.js`.
 
-# BaseJob
+### Instance methods
+
+#### **`prepare`**
+
+Loads all jobs and connects to the redis instance.
+
+#### **`release`**
+
+Releases the redis connection.
+
+### Events
+
+Jobs will emit every time a job has been enqueued
+
+```js
+jobs.on('enqueued', ({ jobItem }) => console.log(jobItem))
+```
+
+## BaseJob
 
 Base interface to enable a JS class to be used as Job it will only require a perform function to behave correctly.
 
@@ -68,39 +86,46 @@ export default class DeleteFlagedUsersJob extends BaseJob {
   static queue = 'important'
 
   async perform(params) {
-    deleteFlagedUsers(params.count)
+    deleteFlaggedUsers(params.count)
   }
 }
 ```
 
-## Static options
+### Static properties
 
-- `schedule` `{ cronTime: String, timeZone?: String }`
-  If present the job will be enqueued using a cron, it requires a cronTime format string for cron to trigger the enqueueing.
-- `maxRetries` `Number` `default: 5`
-  If the job fails, how many times re-try to run it before failing once and for all.
-- `retryAfter` `String` `default: 1 minute`
-  How much time to wait before trying to run a job after a failure.
-- `queue` `String` `default: default`
-  Which queue use to enqueue this job, useful later when setting up the worker on how to prioritize queues.
+#### **`schedule`** `{ cronTime: String, timeZone?: String }`
 
-# Worker
+If present the job will be enqueued using a cron, it requires a cronTime format string for cron to trigger the enqueueing.
+
+#### **`maxRetries`** `Number` `default: 5`
+
+If the job fails, how many times re-try to run it before failing once and for all.
+
+#### **`retryAfter`** `String` `default: 1 minute`
+
+How much time to wait before trying to run a job after a failure.
+
+#### **`queue`** `String` `default: default`
+
+Which queue use to enqueue this job, useful later when setting up the worker on how to prioritize queues.
+
+## Worker
 
 The `Worker` is what you use to run your enqueued jobs, it interfaces the same as `Jobs`, you can also use the `Worker` to prepare jobs and then start processing them.
 
 ```js
 import { Worker } from '@universal-packages/background-jobs'
-import DeleteFlagedUsersJob from './src/jobs/DeleteFlagedUsers.job'
+import DeleteFlaggedUsersJob from './src/jobs/DeleteFlaggedUsers.job'
 
 const worker = new Worker({ identifier: 'app-jobs', jobsDirectory: './src/jobs', concurrentPerformers: 2, queuePriority: { important: 2 }, waitTimeIfEmptyRound: 10000 })
 
 await worker.prepare() // Connects redis queue and load jobs.
 
-await DeleteFlagedUsersJob.performLater({ count: 10 }) // Enqueue job to be performed later
+await DeleteFlaggedUsersJob.performLater({ count: 10 }) // Enqueue job to be performed later
 
 await worker.run()
 
-// DeleteFlagedUsersJob will be performed now
+// DeleteFlaggedUsersJob will be performed now
 
 // When app going down
 await worker.stop()
@@ -120,19 +145,25 @@ Additionally takes the following ones:
 - `waitTimeIfEmptyRound` `number` `default: 1000`
   In milliseconds how much to wait if there is nothing to perform, so the pulling is not so aggressive trying to get jobs to perform.
 
-## Events
+### Instance methods
 
-Events will be emitted while background jobs do its job ;).
+#### **`prepare`**
 
-### Jobs
+Loads all jobs and connects to the redis instance.
 
-Jobs will emit every time a job has been enqueued
+#### **`run`**
 
-```js
-jobs.on('enqueued', ({ jobItem }) => console.log(jobItem))
-```
+Start dequeuing jobs to be performed.
 
-### Worker
+#### **`stop`**
+
+Stop dequeuing jobs.
+
+#### **`release`**
+
+Releases the redis connection.
+
+### Events
 
 Worker will emit a series of events regarding the status of jobs being performed.
 

@@ -14,9 +14,9 @@
     "test:clear": "jest --clearCache"
   },
   "dependencies": {
-    "@universal-packages/module-loader": "^1.0.0",
-    "@universal-packages/redis-queue": "^1.0.0",
-    "@universal-packages/time-measurer": "^1.3.0",
+    "@universal-packages/module-loader": "1.0.1",
+    "@universal-packages/redis-queue": "1.0.1",
+    "@universal-packages/time-measurer": "1.4.0",
     "cron": "^2.1.0"
   },
   "peerDependencies": {
