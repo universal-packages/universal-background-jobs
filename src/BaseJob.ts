@@ -10,19 +10,23 @@ export default class BaseJob<P = Record<string, any>> {
   protected static __srcFile: string
 
   public static async performLater<P = Record<string, any>>(payload?: P, options?: { at?: Date; wait?: string }): Promise<void> {
-    const jobRecord: JobItem = {
-      payload,
-      srcFile: this.__srcFile,
-      name: this.name,
-      maxRetries: this.maxRetries,
-      queue: this.queue,
-      retryAfter: this.retryAfter
-    }
-
-    await this.__performLater(jobRecord, options)
+    await new this().performLater(payload, options)
   }
 
-  public async perform<Pa = P>(_payload: Pa): Promise<void> {
+  public async perform(_payload: P): Promise<void> {
     throw new Error('Job "perform" method not implemented')
+  }
+
+  public async performLater(payload?: P, options?: { at?: Date; wait?: string }): Promise<void> {
+    const jobRecord: JobItem = {
+      payload,
+      srcFile: this.constructor['__srcFile'],
+      name: this.constructor.name,
+      maxRetries: this.constructor['maxRetries'],
+      queue: this.constructor['queue'],
+      retryAfter: this.constructor['retryAfter']
+    }
+
+    await this.constructor['__performLater'](jobRecord, options)
   }
 }
