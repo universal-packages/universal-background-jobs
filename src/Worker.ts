@@ -11,7 +11,7 @@ export default class Worker extends Jobs {
 
   public constructor(options: JobsWorkerOptions) {
     super(options)
-    this.options = { concurrentPerformers: 1, queuePriority: {}, ...options }
+    this.options = { additional: [], jobsLocation: './src', concurrentPerformers: 1, queuePriority: {}, ...options }
   }
 
   public async run(): Promise<void> {

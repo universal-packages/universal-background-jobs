@@ -2,6 +2,7 @@ import { Measurement, sleep } from '@universal-packages/time-measurer'
 import { Worker } from '../src'
 import FailingJob from './__fixtures__/failing/Failing.job'
 import ExcellentJob from './__fixtures__/jobs/Excellent.job'
+import ExtraEmail from './__fixtures__/jobs/Extra.email'
 import GoodJob from './__fixtures__/jobs/Good.job'
 import PriorityAJob from './__fixtures__/priority/PriorityA.job'
 import PriorityBJob from './__fixtures__/priority/PriorityB.job'
@@ -49,6 +50,48 @@ describe('BackgroundJobs', (): void => {
             name: 'ExcellentJob',
             maxRetries: 5,
             queue: 'default',
+            retryAfter: '1 minute'
+          },
+          measurement: expect.any(Measurement)
+        }
+      ]
+    ])
+
+    expect(GoodJob.performJestFn).toHaveBeenCalledWith({ good: true })
+    expect(ExcellentJob.performJestFn).toHaveBeenCalledWith({ excellent: true })
+  })
+
+  it('loads additional jobs extensions that may want to work as background jobs', async (): Promise<void> => {
+    const performedMock = jest.fn()
+    const worker = new Worker({
+      additional: [{ conventionPrefix: 'email' }],
+      jobsLocation: './tests/__fixtures__/jobs',
+      waitTimeIfEmptyRound: 0
+    })
+
+    await worker.prepare()
+    await worker.redisQueue.clear()
+
+    worker.on('performed', performedMock)
+
+    await ExtraEmail.performLater({ extra: true })
+
+    await worker.run()
+
+    await sleep(200)
+
+    await worker.stop()
+    await worker.release()
+
+    expect(performedMock.mock.calls).toEqual([
+      [
+        {
+          jobItem: {
+            payload: { extra: true },
+            srcFile: expect.stringMatching(/__fixtures__\/jobs\/Extra.email.ts/),
+            name: 'ExtraEmail',
+            maxRetries: 5,
+            queue: 'email',
             retryAfter: '1 minute'
           },
           measurement: expect.any(Measurement)

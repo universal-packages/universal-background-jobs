@@ -10,9 +10,9 @@ export default class Jobs extends EventEmitter {
   public readonly jobsCollection: JobsCollection = {}
   public readonly queues: Set<string> = new Set()
 
-  public constructor(options: JobsOptions) {
+  public constructor(options?: JobsOptions) {
     super()
-    this.options = { identifier: 'jobs', ...options }
+    this.options = { additional: [], jobsLocation: './src', identifier: 'jobs', ...options }
 
     this.redisQueue = new RedisQueue(this.options)
   }
@@ -20,13 +20,17 @@ export default class Jobs extends EventEmitter {
   public async prepare(): Promise<void> {
     await this.redisQueue.connect()
     await this.loadJobs()
+
+    for (let i = 0; i < this.options.additional.length; i++) {
+      await this.loadJobs(this.options.additional[i].location || this.options.jobsLocation, this.options.additional[i].conventionPrefix)
+    }
   }
 
   public async release(): Promise<void> {
     await this.redisQueue.disconnect()
   }
 
-  public async loadJobs(directory?: string, conventionPrefix = 'job'): Promise<void> {
+  private async loadJobs(directory?: string, conventionPrefix = 'job'): Promise<void> {
     const modules = await loadModules(directory || this.options.jobsLocation, { conventionPrefix })
 
     for (let i = 0; i < modules.length; i++) {

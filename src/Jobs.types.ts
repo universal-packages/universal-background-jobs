@@ -5,9 +5,10 @@ export type JobStatus = 'waiting' | 'failed' | 'performed'
 export type PerformLaterFunction = (data: Record<string, any>, options?: { at?: Date; wait?: string }) => Promise<void> | void
 
 export interface JobsOptions extends RedisClientOptions {
+  additional?: Additional[]
   client?: RedisClientType<RedisModules, RedisFunctions, RedisScripts>
   identifier?: string
-  jobsLocation: string
+  jobsLocation?: string
 }
 
 export interface JobItem {
@@ -33,4 +34,9 @@ export interface JobsCollection {
 export interface Schedule {
   cronTime: string | Date
   timeZone?: string
+}
+
+export interface Additional {
+  conventionPrefix: string
+  location?: string
 }
