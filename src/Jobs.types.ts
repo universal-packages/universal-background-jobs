@@ -40,3 +40,8 @@ export interface Additional {
   conventionPrefix: string
   location?: string
 }
+
+export interface LaterOptions {
+  at?: Date
+  wait?: string
+}

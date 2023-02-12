@@ -1,4 +1,4 @@
-import { JobItem, PerformLaterFunction } from './Jobs.types'
+import { JobItem, LaterOptions, PerformLaterFunction } from './Jobs.types'
 
 export default class BaseJob<P = Record<string, any>> {
   public static schedule?: { cronTime: string; timeZone?: string }
@@ -9,7 +9,7 @@ export default class BaseJob<P = Record<string, any>> {
   protected static __performLater: PerformLaterFunction
   protected static __srcFile: string
 
-  public static async performLater<P = Record<string, any>>(payload?: P, options?: { at?: Date; wait?: string }): Promise<void> {
+  public static async performLater<P = Record<string, any>>(payload?: P, options?: LaterOptions): Promise<void> {
     await new this().performLater(payload, options)
   }
 
