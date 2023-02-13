@@ -21,7 +21,7 @@ Interface to use to prepare everything, this is preparing a redis queue to be us
 import { Jobs } from '@universal-packages/background-jobs'
 import DeleteFlaggedUsersJob from './src/jobs/DeleteFlaggedUsers.job'
 
-const jobs = new Jobs({ identifier: 'app-jobs', jobsDirectory: './src/jobs' })
+const jobs = new Jobs({ identifier: 'app-jobs', jobsLocation: './src/jobs' })
 
 await jobs.prepare() // Connects redis queue and load jobs.
 
@@ -51,7 +51,7 @@ Additionally takes the following ones:
   If you already have a client working in your app you can pass the instance here to not connect another client inside the `RedisQueue` instance.
 - `identifier` `String`
   This will be prepended to all redis keys used internally to handle the queue, so one can debug easier.
-- `jobsDirectory` `String`
+- `jobsLocation` `String`
   Where all job files are, all files should prepend a `.job` prefix, ex: `Later.job.js`.
 
 ### Instance methods
@@ -117,7 +117,7 @@ The `Worker` is what you use to run your enqueued jobs, it interfaces the same a
 import { Worker } from '@universal-packages/background-jobs'
 import DeleteFlaggedUsersJob from './src/jobs/DeleteFlaggedUsers.job'
 
-const worker = new Worker({ identifier: 'app-jobs', jobsDirectory: './src/jobs', concurrentPerformers: 2, queuePriority: { important: 2 }, waitTimeIfEmptyRound: 10000 })
+const worker = new Worker({ identifier: 'app-jobs', jobsLocation: './src/jobs', concurrentPerformers: 2, queuePriority: { important: 2 }, waitTimeIfEmptyRound: 10000 })
 
 await worker.prepare() // Connects redis queue and load jobs.
 
