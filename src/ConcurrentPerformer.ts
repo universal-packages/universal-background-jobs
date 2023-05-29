@@ -1,5 +1,6 @@
 import { sleep, startMeasurement } from '@universal-packages/time-measurer'
 import { EventEmitter } from 'stream'
+
 import BaseJob from './BaseJob'
 import { ConcurrentPerformerOptions } from './ConcurrentPerformer.types'
 import { JobItem } from './Jobs.types'

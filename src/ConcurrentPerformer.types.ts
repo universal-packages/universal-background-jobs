@@ -1,4 +1,5 @@
 import { RedisQueue } from '@universal-packages/redis-queue'
+
 import { JobsCollection } from './Jobs.types'
 import { QueuePriority } from './Worker.types'
 

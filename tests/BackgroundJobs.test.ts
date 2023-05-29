@@ -1,4 +1,5 @@
 import { Measurement, sleep } from '@universal-packages/time-measurer'
+
 import { Worker } from '../src'
 import FailingJob from './__fixtures__/failing/Failing.job'
 import ExcellentJob from './__fixtures__/jobs/Excellent.job'

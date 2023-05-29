@@ -1,4 +1,5 @@
 import { RedisClientOptions, RedisClientType, RedisFunctions, RedisModules, RedisScripts } from 'redis'
+
 import BaseJob from './BaseJob'
 
 export type JobStatus = 'waiting' | 'failed' | 'performed'

@@ -1,6 +1,7 @@
 import { loadModules } from '@universal-packages/module-loader'
 import { RedisQueue } from '@universal-packages/redis-queue'
 import EventEmitter from 'events'
+
 import BaseJob from './BaseJob'
 import { JobItem, JobsCollection, JobsOptions } from './Jobs.types'
 

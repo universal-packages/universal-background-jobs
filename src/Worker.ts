@@ -1,4 +1,5 @@
 import { CronJob } from 'cron'
+
 import ConcurrentPerformer from './ConcurrentPerformer'
 import Jobs from './Jobs'
 import { JobsWorkerOptions } from './Worker.types'
