@@ -14,7 +14,7 @@ import ScheduledJob from './__fixtures__/schedule/Scheduled.job'
 describe('BackgroundJobs', (): void => {
   it('loads jobs and enable them to enqueue jobs for later and process them via worker', async (): Promise<void> => {
     const performedMock = jest.fn()
-    const worker = new Worker({ jobsLocation: './tests/__fixtures__/jobs', waitTimeIfEmptyRound: 0 })
+    const worker = new Worker({ jobsLocation: './tests/__fixtures__/jobs', queue: 'memory', waitTimeIfEmptyRound: 0 })
 
     await worker.prepare()
     await worker.queue.clear()
@@ -68,6 +68,7 @@ describe('BackgroundJobs', (): void => {
     const performedMock = jest.fn()
     const worker = new Worker({
       additional: [{ conventionPrefix: 'email' }],
+      queue: 'memory',
       jobsLocation: './tests/__fixtures__/jobs',
       waitTimeIfEmptyRound: 0
     })
@@ -108,7 +109,7 @@ describe('BackgroundJobs', (): void => {
 
   it('prioritize by follow a queue property object', async (): Promise<void> => {
     const performedMock = jest.fn()
-    const worker = new Worker({ jobsLocation: './tests/__fixtures__/priority', waitTimeIfEmptyRound: 0, queuePriority: { low: 1, high: 3 } })
+    const worker = new Worker({ jobsLocation: './tests/__fixtures__/priority', queue: 'memory', waitTimeIfEmptyRound: 0, queuePriority: { low: 1, high: 3 } })
 
     await worker.prepare()
     await worker.queue.clear()
@@ -144,7 +145,7 @@ describe('BackgroundJobs', (): void => {
   it('retries if a job fails as per configured', async (): Promise<void> => {
     const retryMock = jest.fn()
     const failedMock = jest.fn()
-    const worker = new Worker({ jobsLocation: './tests/__fixtures__/failing', waitTimeIfEmptyRound: 0 })
+    const worker = new Worker({ jobsLocation: './tests/__fixtures__/failing', queue: 'memory', waitTimeIfEmptyRound: 0 })
 
     await worker.prepare()
     await worker.queue.clear()
@@ -232,7 +233,7 @@ describe('BackgroundJobs', (): void => {
   })
 
   it('schedules the job if self configured', async (): Promise<void> => {
-    const worker = new Worker({ jobsLocation: './tests/__fixtures__/schedule', waitTimeIfEmptyRound: 0 })
+    const worker = new Worker({ jobsLocation: './tests/__fixtures__/schedule', queue: 'memory', waitTimeIfEmptyRound: 0 })
 
     await worker.prepare()
     await worker.queue.clear()
@@ -249,7 +250,7 @@ describe('BackgroundJobs', (): void => {
 
   it('throws if a job has an error at loading', async (): Promise<void> => {
     let error: Error
-    const worker = new Worker({ jobsLocation: './tests/__fixtures__/load-error', waitTimeIfEmptyRound: 0 })
+    const worker = new Worker({ jobsLocation: './tests/__fixtures__/load-error', queue: 'memory', waitTimeIfEmptyRound: 0 })
 
     try {
       await worker.prepare()
@@ -264,13 +265,13 @@ describe('BackgroundJobs', (): void => {
   })
 
   it('Sets adapters from string', async (): Promise<void> => {
-    const worker = new Worker({ queue: 'test' })
+    const worker = new Worker({ queue: 'memory' })
 
-    expect(worker).toMatchObject({ queue: expect.any(TestQueue) })
+    expect(worker).toMatchObject({ queue: expect.any(MemoryQueue) })
   })
 
   it('Sets adapters from objects', async (): Promise<void> => {
-    const queue = new MemoryQueue()
+    const queue = new TestQueue()
     const worker = new Worker({ queue })
 
     expect(worker).toMatchObject({ queue })
@@ -278,7 +279,7 @@ describe('BackgroundJobs', (): void => {
 
   it('can test job enqueueing with a mock', async (): Promise<void> => {
     TestQueue.setMock(jest.fn())
-    const worker = new Worker({ jobsLocation: './tests/__fixtures__/jobs', queue: 'test' })
+    const worker = new Worker({ jobsLocation: './tests/__fixtures__/jobs' })
 
     await worker.prepare()
     await worker.queue.clear()

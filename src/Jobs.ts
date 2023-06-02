@@ -15,7 +15,7 @@ export default class Jobs extends EventEmitter {
 
   public constructor(options?: JobsOptions) {
     super()
-    this.options = { additional: [], queue: 'memory', identifier: 'jobs', jobsLocation: './src', ...options }
+    this.options = { additional: [], queue: process.env['NODE_ENV'] === 'test' ? 'test' : 'memory', jobsLocation: './src', ...options }
 
     this.queue = this.generateQueue()
   }

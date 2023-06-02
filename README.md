@@ -10,20 +10,20 @@ Redis queue background jobs enqueuer and worker processor.
 
 ```shell
 npm install @universal-packages/background-jobs
-npm install redis
 ```
 
 ## Jobs
 
-Interface to use to prepare everything, this is preparing a redis queue to be used to store jobs and be retrieved later by the [Worker](#worker), internally prepare all job files to be able to enqueue themselves using the function `performLater`.
+Interface to use to prepare everything, this is preparing the queue to be used to store jobs and be retrieved later by the [Worker](#worker), internally prepare all job files to be able to enqueue themselves using the function `performLater`.
 
 ```js
 import { Jobs } from '@universal-packages/background-jobs'
+
 import DeleteFlaggedUsersJob from './src/jobs/DeleteFlaggedUsers.job'
 
-const jobs = new Jobs({ identifier: 'app-jobs', jobsLocation: './src/jobs' })
+const jobs = new Jobs({ identifier: 'app-jobs', queue: 'redis', jobsLocation: './src/jobs' })
 
-await jobs.prepare() // Connects redis queue and load jobs.
+await jobs.prepare()
 
 await DeleteFlaggedUsersJob.performLater({ count: 10 }) // Enqueue job to be performed later
 
@@ -43,15 +43,17 @@ export default class DeleteFlaggedUsersJob extends BaseJob {
 
 ### Options
 
-`Jobs` takes the same [options](https://github.com/redis/node-redis/blob/master/docs/client-configuration.md) as the redis client.
-
-Additionally takes the following ones:
-
-- `client` `RedisClient`
-  If you already have a client working in your app you can pass the instance here to not connect another client inside the `RedisQueue` instance.
-- `identifier` `String`
-  This will be prepended to all redis keys used internally to handle the queue, so one can debug easier.
-- `jobsLocation` `String`
+- **`additional`** `Additional[]`
+  Additional jobs extensions that may want to work as background jobs
+  - **`conventionPrefix`** `string`
+    Prefix to use to find the additional jobs like files, ex: `.mail` will find all files that start with `.mail` and load them as jobs.
+  - **`location`** `string`
+    Where to find the additional jobs, by default will look in the same folder as the main jobs.
+- **`queue`** `string | QueueInterface` `Default: memory | test`
+  Queue to use to enqueue jobs, by default if NODE_ENV is development memory(not recommended for production) will be used, if NODE_ENV is test the the test queue will be used.
+- **`queueOptions`** `Object`
+  Any options that the queue constructor accepts
+- **`jobsLocation`** `String`
   Where all job files are, all files should prepend a `.job` prefix, ex: `Later.job.js`.
 
 ### Instance methods
@@ -115,6 +117,7 @@ The `Worker` is what you use to run your enqueued jobs, it interfaces the same a
 
 ```js
 import { Worker } from '@universal-packages/background-jobs'
+
 import DeleteFlaggedUsersJob from './src/jobs/DeleteFlaggedUsers.job'
 
 const worker = new Worker({ identifier: 'app-jobs', jobsLocation: './src/jobs', concurrentPerformers: 2, queuePriority: { important: 2 }, waitTimeIfEmptyRound: 10000 })
