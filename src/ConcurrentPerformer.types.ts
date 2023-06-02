@@ -1,12 +1,10 @@
-import { RedisQueue } from '@universal-packages/redis-queue'
-
-import { JobsCollection } from './Jobs.types'
+import { JobsCollection, QueueInterface } from './Jobs.types'
 import { QueuePriority } from './Worker.types'
 
 export interface ConcurrentPerformerOptions {
   jobs: JobsCollection
-  redisQueue: RedisQueue
-  queues: string[]
+  queue: QueueInterface
+  queueNames: string[]
   queuePriority: QueuePriority
   waitTimeIfEmptyRound: number
 }

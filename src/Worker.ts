@@ -23,8 +23,8 @@ export default class Worker extends Jobs {
     for (let i = 0; i < this.options.concurrentPerformers; i++) {
       const performer = new ConcurrentPerformer({
         jobs: this.jobsCollection,
-        redisQueue: this.redisQueue,
-        queues: Array.from(this.queues),
+        queue: this.queue,
+        queueNames: Array.from(this.queueNames),
         queuePriority: this.options.queuePriority,
         waitTimeIfEmptyRound: this.options.waitTimeIfEmptyRound || 1000
       })

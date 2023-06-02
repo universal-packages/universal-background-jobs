@@ -20,7 +20,7 @@ export default class ConcurrentPerformer extends EventEmitter {
   public constructor(options: ConcurrentPerformerOptions) {
     super()
     this.options = options
-    this.currentQueue = this.options.queues[this.currentQueueIndex]
+    this.currentQueue = this.options.queueNames[this.currentQueueIndex]
   }
 
   public async start(): Promise<void> {
@@ -46,10 +46,10 @@ export default class ConcurrentPerformer extends EventEmitter {
     }
 
     const measurer = startMeasurement()
-    const queueItem = await this.options.redisQueue.dequeue(this.currentQueue)
 
-    if (queueItem) {
-      const jobItem = queueItem.payload as JobItem
+    const jobItem = await this.options.queue.dequeue(this.currentQueue)
+
+    if (jobItem) {
       const JobClass = this.options.jobs[jobItem.name]
 
       if (JobClass) {
@@ -72,7 +72,7 @@ export default class ConcurrentPerformer extends EventEmitter {
           if (shouldRetry) {
             jobItem.retries = (jobItem.retries || 0) + 1
 
-            await this.options.redisQueue.enqueue(jobItem, jobItem.queue, { wait: jobItem.retryAfter })
+            await this.options.queue.enqueue({ ...jobItem }, jobItem.queue, { wait: jobItem.retryAfter })
 
             this.emit('retry', { jobItem, measurement })
           } else {
@@ -100,14 +100,14 @@ export default class ConcurrentPerformer extends EventEmitter {
     if ((this.options.queuePriority[this.currentQueue] || 1) === this.currentQueueCount || byPass) {
       this.currentQueueIndex = this.currentQueueIndex + 1
 
-      if (this.currentQueueIndex === this.options.queues.length) {
+      if (this.currentQueueIndex === this.options.queueNames.length) {
         this.currentQueueIndex = 0
 
         this.lastRoundWasEmpty = this.processedInRound === 0
         this.processedInRound = 0
       }
 
-      this.currentQueue = this.options.queues[this.currentQueueIndex]
+      this.currentQueue = this.options.queueNames[this.currentQueueIndex]
       this.currentQueueCount = 0
     }
   }

@@ -3,11 +3,13 @@ import { RedisClientOptions, RedisClientType, RedisFunctions, RedisModules, Redi
 import BaseJob from './BaseJob'
 
 export type JobStatus = 'waiting' | 'failed' | 'performed'
-export type PerformLaterFunction = (data: Record<string, any>, options?: { at?: Date; wait?: string }) => Promise<void> | void
+export type PerformLaterFunction = (data: Record<string, any>, options?: LaterOptions) => Promise<void> | void
 
 export interface JobsOptions extends RedisClientOptions {
   additional?: Additional[]
   client?: RedisClientType<RedisModules, RedisFunctions, RedisScripts>
+  queue?: string | QueueInterface
+  queueOptions?: Record<string, any>
   identifier?: string
   jobsLocation?: string
 }
@@ -45,4 +47,16 @@ export interface Additional {
 export interface LaterOptions {
   at?: Date
   wait?: string
+}
+
+export interface QueueInterface {
+  prepare?: () => void | Promise<void>
+  release?: () => void | Promise<void>
+  clear: () => void | Promise<void>
+  enqueue: (item: JobItem, queue: string, options?: LaterOptions) => void | Promise<void>
+  dequeue: (queue: string) => JobItem | Promise<JobItem>
+}
+
+export interface QueueInterfaceClass {
+  new (...args: any[]): QueueInterface
 }

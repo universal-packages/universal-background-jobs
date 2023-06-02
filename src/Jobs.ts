@@ -1,25 +1,27 @@
+import { resolveAdapter } from '@universal-packages/adapter-resolver'
 import { loadModules } from '@universal-packages/module-loader'
-import { RedisQueue } from '@universal-packages/redis-queue'
 import EventEmitter from 'events'
 
 import BaseJob from './BaseJob'
-import { JobItem, JobsCollection, JobsOptions } from './Jobs.types'
+import { JobItem, JobsCollection, JobsOptions, LaterOptions, QueueInterface, QueueInterfaceClass } from './Jobs.types'
+import MemoryQueue from './MemoryQueue'
+import TestQueue from './TestQueue'
 
 export default class Jobs extends EventEmitter {
   public readonly options: JobsOptions
-  public readonly redisQueue: RedisQueue
   public readonly jobsCollection: JobsCollection = {}
-  public readonly queues: Set<string> = new Set()
+  public readonly queueNames: Set<string> = new Set()
+  public readonly queue: QueueInterface
 
   public constructor(options?: JobsOptions) {
     super()
-    this.options = { additional: [], jobsLocation: './src', identifier: 'jobs', ...options }
+    this.options = { additional: [], queue: 'memory', identifier: 'jobs', jobsLocation: './src', ...options }
 
-    this.redisQueue = new RedisQueue(this.options)
+    this.queue = this.generateQueue()
   }
 
   public async prepare(): Promise<void> {
-    await this.redisQueue.connect()
+    this.queue.prepare && (await this.queue.prepare())
     await this.loadJobs()
 
     for (let i = 0; i < this.options.additional.length; i++) {
@@ -28,7 +30,7 @@ export default class Jobs extends EventEmitter {
   }
 
   public async release(): Promise<void> {
-    await this.redisQueue.disconnect()
+    this.queue.release && (await this.queue.release())
   }
 
   private async loadJobs(directory?: string, conventionPrefix = 'job'): Promise<void> {
@@ -42,7 +44,7 @@ export default class Jobs extends EventEmitter {
       } else {
         const Job: typeof BaseJob = currentModule.exports
         this.jobsCollection[Job.name] = currentModule.exports
-        this.queues.add(Job.queue)
+        this.queueNames.add(Job.queue)
 
         Job['__performLater'] = this.performLater.bind(this)
         Job['__srcFile'] = currentModule.location
@@ -50,8 +52,21 @@ export default class Jobs extends EventEmitter {
     }
   }
 
-  private async performLater(item: JobItem, options?: { at?: Date; wait?: string }): Promise<void> {
-    await this.redisQueue.enqueue(item, item.queue, options)
+  private async performLater(item: JobItem, options?: LaterOptions): Promise<void> {
+    await this.queue.enqueue(item, item.queue, options)
     this.emit('enqueued', { jobItem: item })
+  }
+
+  private generateQueue(): QueueInterface {
+    if (typeof this.options.queue === 'string') {
+      const AdapterModule = resolveAdapter<QueueInterfaceClass>(this.options.queue, {
+        domain: 'background-jobs',
+        type: 'queue',
+        internal: { memory: MemoryQueue, test: TestQueue }
+      })
+      return new AdapterModule(this.options.queueOptions)
+    } else {
+      return this.options.queue
+    }
   }
 }

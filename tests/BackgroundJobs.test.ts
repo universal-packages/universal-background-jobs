@@ -1,6 +1,8 @@
 import { Measurement, sleep } from '@universal-packages/time-measurer'
 
 import { Worker } from '../src'
+import MemoryQueue from '../src/MemoryQueue'
+import TestQueue from '../src/TestQueue'
 import FailingJob from './__fixtures__/failing/Failing.job'
 import ExcellentJob from './__fixtures__/jobs/Excellent.job'
 import ExtraEmail from './__fixtures__/jobs/Extra.email'
@@ -15,7 +17,7 @@ describe('BackgroundJobs', (): void => {
     const worker = new Worker({ jobsLocation: './tests/__fixtures__/jobs', waitTimeIfEmptyRound: 0 })
 
     await worker.prepare()
-    await worker.redisQueue.clear()
+    await worker.queue.clear()
 
     worker.on('performed', performedMock)
 
@@ -71,7 +73,7 @@ describe('BackgroundJobs', (): void => {
     })
 
     await worker.prepare()
-    await worker.redisQueue.clear()
+    await worker.queue.clear()
 
     worker.on('performed', performedMock)
 
@@ -109,7 +111,7 @@ describe('BackgroundJobs', (): void => {
     const worker = new Worker({ jobsLocation: './tests/__fixtures__/priority', waitTimeIfEmptyRound: 0, queuePriority: { low: 1, high: 3 } })
 
     await worker.prepare()
-    await worker.redisQueue.clear()
+    await worker.queue.clear()
 
     worker.on('performed', performedMock)
 
@@ -145,7 +147,7 @@ describe('BackgroundJobs', (): void => {
     const worker = new Worker({ jobsLocation: './tests/__fixtures__/failing', waitTimeIfEmptyRound: 0 })
 
     await worker.prepare()
-    await worker.redisQueue.clear()
+    await worker.queue.clear()
 
     worker.on('retry', retryMock)
     worker.on('failed', failedMock)
@@ -233,7 +235,7 @@ describe('BackgroundJobs', (): void => {
     const worker = new Worker({ jobsLocation: './tests/__fixtures__/schedule', waitTimeIfEmptyRound: 0 })
 
     await worker.prepare()
-    await worker.redisQueue.clear()
+    await worker.queue.clear()
 
     await worker.run()
 
@@ -251,7 +253,7 @@ describe('BackgroundJobs', (): void => {
 
     try {
       await worker.prepare()
-      await worker.redisQueue.clear()
+      await worker.queue.clear()
     } catch (err) {
       error = err
     }
@@ -259,5 +261,35 @@ describe('BackgroundJobs', (): void => {
     await worker.release()
 
     expect(error).toEqual('Error')
+  })
+
+  it('Sets adapters from string', async (): Promise<void> => {
+    const worker = new Worker({ queue: 'test' })
+
+    expect(worker).toMatchObject({ queue: expect.any(TestQueue) })
+  })
+
+  it('Sets adapters from objects', async (): Promise<void> => {
+    const queue = new MemoryQueue()
+    const worker = new Worker({ queue })
+
+    expect(worker).toMatchObject({ queue })
+  })
+
+  it('can test job enqueueing with a mock', async (): Promise<void> => {
+    TestQueue.setMock(jest.fn())
+    const worker = new Worker({ jobsLocation: './tests/__fixtures__/jobs', queue: 'test' })
+
+    await worker.prepare()
+    await worker.queue.clear()
+
+    await GoodJob.performLater({ good: true })
+    await ExcellentJob.performLater({ excellent: true })
+
+    await worker.stop()
+    await worker.release()
+
+    expect(TestQueue.mock).toHaveBeenCalledWith('GoodJob', 'default', { good: true }, undefined)
+    expect(TestQueue.mock).toHaveBeenCalledWith('ExcellentJob', 'default', { excellent: true }, undefined)
   })
 })
