@@ -3,7 +3,6 @@ import { EventEmitter } from 'stream'
 
 import BaseJob from './BaseJob'
 import { ConcurrentPerformerOptions } from './ConcurrentPerformer.types'
-import { JobItem } from './Jobs.types'
 
 export default class ConcurrentPerformer extends EventEmitter {
   private readonly options: ConcurrentPerformerOptions
