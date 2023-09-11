@@ -17,7 +17,7 @@
   "dependencies": {
     "@universal-packages/adapter-resolver": "^1.2.0",
     "@universal-packages/module-loader": "1.0.1",
-    "@universal-packages/time-measurer": "^1.4.3",
+    "@universal-packages/time-measurer": "^1.4.9",
     "cron": "^2.1.0",
     "ms": "^2.1.3"
   },
