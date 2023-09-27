@@ -11,7 +11,7 @@ import PriorityAJob from './__fixtures__/priority/PriorityA.job'
 import PriorityBJob from './__fixtures__/priority/PriorityB.job'
 import ScheduledJob from './__fixtures__/schedule/Scheduled.job'
 
-describe('BackgroundJobs', (): void => {
+describe(Worker, (): void => {
   it('loads jobs and enable them to enqueue jobs for later and process them via worker', async (): Promise<void> => {
     const performedMock = jest.fn()
     const worker = new Worker({ jobsLocation: './tests/__fixtures__/jobs', queue: 'memory', waitTimeIfEmptyRound: 0 })
