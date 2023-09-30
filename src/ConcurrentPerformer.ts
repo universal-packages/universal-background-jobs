@@ -59,7 +59,8 @@ export default class ConcurrentPerformer extends EventEmitter {
 
           const measurement = measurer.finish()
 
-          this.emit('performed', { jobItem, measurement })
+          this.emit('*', { event: 'performed', measurement, payload: { jobItem } })
+          this.emit('performed', { event: 'performed', measurement, payload: { jobItem } })
         } catch (error) {
           const measurement = measurer.finish()
 
@@ -73,13 +74,18 @@ export default class ConcurrentPerformer extends EventEmitter {
 
             await this.options.queue.enqueue({ ...jobItem }, jobItem.queue, { wait: jobItem.retryAfter })
 
-            this.emit('retry', { jobItem, measurement })
+            this.emit('*', { event: 'retry', measurement, payload: { jobItem } })
+            this.emit('retry', { event: 'retry', measurement, payload: { jobItem } })
           } else {
-            this.emit('failed', { jobItem, measurement })
+            this.emit('*', { event: 'failed', measurement, payload: { jobItem } })
+            this.emit('failed', { event: 'failed', measurement, payload: { jobItem } })
           }
         }
       } else {
-        this.emit('error', { error: new Error('No Job class loaded to perform this job'), jobItem })
+        const error = new Error('No Job class loaded to perform this job')
+
+        this.emit('*', { event: 'error', error, payload: { jobItem } })
+        this.emit('error', { event: 'error', error, payload: { jobItem } })
       }
       this.processedInRound++
 

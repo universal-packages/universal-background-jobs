@@ -171,10 +171,12 @@ Releases the redis connection.
 Worker will emit a series of events regarding the status of jobs being performed.
 
 ```js
-jobs.on('performed', ({ jobItem, measurement }) => console.log(jobItem, measurement))
-jobs.on('retry', ({ jobItem, measurement }) => console.log(jobItem, measurement))
-jobs.on('failed', ({ jobItem, measurement }) => console.log(jobItem, measurement))
-jobs.on('error', ({ error, jobItem }) => console.log(error, jobItem))
+jobs.on('*', (event) => console.log(event))
+jobs.on('enqueued', (event) => console.log(event))
+jobs.on('performed', (event) => console.log(event))
+jobs.on('retry', (event) => console.log(event))
+jobs.on('failed', (event) => console.log(event))
+jobs.on('error', (event) => console.log(event))
 ```
 
 ## Typescript

@@ -54,7 +54,9 @@ export default class Jobs extends EventEmitter {
 
   private async performLater(item: JobItem, options?: LaterOptions): Promise<void> {
     await this.queue.enqueue(item, item.queue, options)
-    this.emit('enqueued', { jobItem: item })
+
+    this.emit('*', { event: 'enqueued', payload: { jobItem: item } })
+    this.emit('enqueued', { event: 'enqueued', payload: { jobItem: item } })
   }
 
   private generateQueue(): QueueInterface {

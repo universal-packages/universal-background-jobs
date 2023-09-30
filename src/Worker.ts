@@ -29,6 +29,7 @@ export default class Worker extends Jobs {
         waitTimeIfEmptyRound: this.options.waitTimeIfEmptyRound || 1000
       })
 
+      performer.on('*', (...args: any[]): boolean => this.emit('*', ...args))
       performer.on('performed', (...args: any[]): boolean => this.emit('performed', ...args))
       performer.on('retry', (...args: any[]): boolean => this.emit('retry', ...args))
       performer.on('failed', (...args: any[]): boolean => this.emit('failed', ...args))
