@@ -16,7 +16,7 @@
     "update-dependents": "umaintenance update-dependents"
   },
   "dependencies": {
-    "@universal-packages/adapter-resolver": "^1.2.0",
+    "@universal-packages/adapter-resolver": "^1.2.3",
     "@universal-packages/module-loader": "1.0.1",
     "@universal-packages/time-measurer": "^1.4.9",
     "cron": "^2.1.0",
