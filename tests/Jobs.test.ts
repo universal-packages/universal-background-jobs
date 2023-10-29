@@ -1,6 +1,6 @@
 import { Measurement, sleep } from '@universal-packages/time-measurer'
 
-import { Worker } from '../src'
+import { Jobs } from '../src'
 import MemoryQueue from '../src/MemoryQueue'
 import TestQueue from '../src/TestQueue'
 import FailingJob from './__fixtures__/failing/Failing.job'
@@ -11,25 +11,25 @@ import PriorityAJob from './__fixtures__/priority/PriorityA.job'
 import PriorityBJob from './__fixtures__/priority/PriorityB.job'
 import ScheduledJob from './__fixtures__/schedule/Scheduled.job'
 
-describe(Worker, (): void => {
-  it('loads jobs and enable them to enqueue jobs for later and process them via worker', async (): Promise<void> => {
+describe(Jobs, (): void => {
+  it('loads jobs and enable them to enqueue jobs for later and process them via jobs', async (): Promise<void> => {
     const performedMock = jest.fn()
-    const worker = new Worker({ jobsLocation: './tests/__fixtures__/jobs', queue: 'memory', waitTimeIfEmptyRound: 0 })
+    const jobs = new Jobs({ jobsLocation: './tests/__fixtures__/jobs', queue: 'memory', waitTimeIfEmptyRound: 0 })
 
-    await worker.prepare()
-    await worker.queue.clear()
+    await jobs.prepare()
+    await jobs.queue.clear()
 
-    worker.on('performed', performedMock)
+    jobs.on('performed', performedMock)
 
     await GoodJob.performLater({ good: true })
     await ExcellentJob.performLater({ excellent: true })
 
-    await worker.run()
+    await jobs.run()
 
     await sleep(200)
 
-    await worker.stop()
-    await worker.release()
+    await jobs.stop()
+    await jobs.release()
 
     expect(performedMock.mock.calls).toEqual([
       [
@@ -76,26 +76,26 @@ describe(Worker, (): void => {
 
   it('loads additional jobs extensions that may want to work as background jobs', async (): Promise<void> => {
     const performedMock = jest.fn()
-    const worker = new Worker({
+    const jobs = new Jobs({
       additional: [{ conventionPrefix: 'email' }],
       queue: 'memory',
       jobsLocation: './tests/__fixtures__/jobs',
       waitTimeIfEmptyRound: 0
     })
 
-    await worker.prepare()
-    await worker.queue.clear()
+    await jobs.prepare()
+    await jobs.queue.clear()
 
-    worker.on('performed', performedMock)
+    jobs.on('performed', performedMock)
 
     await ExtraEmail.performLater({ extra: true })
 
-    await worker.run()
+    await jobs.run()
 
     await sleep(200)
 
-    await worker.stop()
-    await worker.release()
+    await jobs.stop()
+    await jobs.release()
 
     expect(performedMock.mock.calls).toEqual([
       [
@@ -124,12 +124,12 @@ describe(Worker, (): void => {
 
   it('prioritize by follow a queue property object', async (): Promise<void> => {
     const performedMock = jest.fn()
-    const worker = new Worker({ jobsLocation: './tests/__fixtures__/priority', queue: 'memory', waitTimeIfEmptyRound: 0, queuePriority: { low: 1, high: 3 } })
+    const jobs = new Jobs({ jobsLocation: './tests/__fixtures__/priority', queue: 'memory', waitTimeIfEmptyRound: 0, queuePriority: { low: 1, high: 3 } })
 
-    await worker.prepare()
-    await worker.queue.clear()
+    await jobs.prepare()
+    await jobs.queue.clear()
 
-    worker.on('performed', performedMock)
+    jobs.on('performed', performedMock)
 
     await PriorityAJob.performLater({ A: true })
     await PriorityAJob.performLater({ A: true })
@@ -139,12 +139,12 @@ describe(Worker, (): void => {
     await PriorityBJob.performLater({ B: true })
     await PriorityBJob.performLater({ B: true })
 
-    await worker.run()
+    await jobs.run()
 
     await sleep(1000)
 
-    await worker.stop()
-    await worker.release()
+    await jobs.stop()
+    await jobs.release()
 
     expect(performedMock.mock.calls).toEqual([
       [
@@ -202,22 +202,22 @@ describe(Worker, (): void => {
   it('retries if a job fails as per configured', async (): Promise<void> => {
     const retryMock = jest.fn()
     const failedMock = jest.fn()
-    const worker = new Worker({ jobsLocation: './tests/__fixtures__/failing', queue: 'memory', waitTimeIfEmptyRound: 0 })
+    const jobs = new Jobs({ jobsLocation: './tests/__fixtures__/failing', queue: 'memory', waitTimeIfEmptyRound: 0 })
 
-    await worker.prepare()
-    await worker.queue.clear()
+    await jobs.prepare()
+    await jobs.queue.clear()
 
-    worker.on('retry', retryMock)
-    worker.on('failed', failedMock)
+    jobs.on('retry', retryMock)
+    jobs.on('failed', failedMock)
 
     await FailingJob.performLater()
 
-    await worker.run()
+    await jobs.run()
 
     await sleep(3500)
 
-    await worker.stop()
-    await worker.release()
+    await jobs.stop()
+    await jobs.release()
 
     expect(retryMock.mock.calls).toEqual([
       [
@@ -302,62 +302,62 @@ describe(Worker, (): void => {
   })
 
   it('schedules the job if self configured', async (): Promise<void> => {
-    const worker = new Worker({ jobsLocation: './tests/__fixtures__/schedule', queue: 'memory', waitTimeIfEmptyRound: 0 })
+    const jobs = new Jobs({ jobsLocation: './tests/__fixtures__/schedule', queue: 'memory', waitTimeIfEmptyRound: 0 })
 
-    await worker.prepare()
-    await worker.queue.clear()
+    await jobs.prepare()
+    await jobs.queue.clear()
 
-    await worker.run()
+    await jobs.run()
 
     await sleep(1100)
 
-    await worker.stop()
-    await worker.release()
+    await jobs.stop()
+    await jobs.release()
 
     expect(ScheduledJob.performJestFn).toHaveBeenCalled()
   })
 
   it('throws if a job has an error at loading', async (): Promise<void> => {
     let error: Error
-    const worker = new Worker({ jobsLocation: './tests/__fixtures__/load-error', queue: 'memory', waitTimeIfEmptyRound: 0 })
+    const jobs = new Jobs({ jobsLocation: './tests/__fixtures__/load-error', queue: 'memory', waitTimeIfEmptyRound: 0 })
 
     try {
-      await worker.prepare()
-      await worker.queue.clear()
+      await jobs.prepare()
+      await jobs.queue.clear()
     } catch (err) {
       error = err
     }
 
-    await worker.release()
+    await jobs.release()
 
     expect(error).toEqual('Error')
   })
 
   it('Sets adapters from string', async (): Promise<void> => {
-    const worker = new Worker({ queue: 'memory' })
+    const jobs = new Jobs({ queue: 'memory' })
 
-    expect(worker).toMatchObject({ queue: expect.any(MemoryQueue) })
+    expect(jobs).toMatchObject({ queue: expect.any(MemoryQueue) })
   })
 
   it('Sets adapters from objects', async (): Promise<void> => {
     const queue = new TestQueue()
-    const worker = new Worker({ queue })
+    const jobs = new Jobs({ queue })
 
-    expect(worker).toMatchObject({ queue })
+    expect(jobs).toMatchObject({ queue })
   })
 
   it('can test job enqueueing with a mock', async (): Promise<void> => {
     TestQueue.setMock(jest.fn())
-    const worker = new Worker({ jobsLocation: './tests/__fixtures__/jobs' })
+    const jobs = new Jobs({ jobsLocation: './tests/__fixtures__/jobs' })
 
-    await worker.prepare()
-    await worker.queue.clear()
+    await jobs.prepare()
+    await jobs.queue.clear()
 
     await GoodJob.performLater({ good: true })
     await ExcellentJob.performLater({ excellent: true })
 
-    await worker.stop()
-    await worker.release()
+    await jobs.stop()
+    await jobs.release()
 
     expect(TestQueue.mock).toHaveBeenCalledWith('GoodJob', 'default', { good: true }, undefined)
     expect(TestQueue.mock).toHaveBeenCalledWith('ExcellentJob', 'default', { excellent: true }, undefined)

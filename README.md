@@ -4,7 +4,7 @@
 [![Testing](https://github.com/universal-packages/universal-background-jobs/actions/workflows/testing.yml/badge.svg)](https://github.com/universal-packages/universal-background-jobs/actions/workflows/testing.yml)
 [![codecov](https://codecov.io/gh/universal-packages/universal-background-jobs/branch/main/graph/badge.svg?token=CXPJSN8IGL)](https://codecov.io/gh/universal-packages/universal-background-jobs)
 
-Redis queue background jobs enqueuer and worker processor.
+Redis queue background jobs enqueuer and jobs processor.
 
 ## Install
 
@@ -14,19 +14,25 @@ npm install @universal-packages/background-jobs
 
 ## Jobs
 
-Interface to use to prepare everything, this is preparing the queue to be used to store jobs and be retrieved later by the [Worker](#worker), internally prepare all job files to be able to enqueue themselves using the function `performLater`.
+Interface to use to prepare everything, this is preparing the queue to be used to store jobs and be retrieved later, internally prepare all job files to be able to enqueue themselves using the function `performLater`.
 
 ```js
 import { Jobs } from '@universal-packages/background-jobs'
 
 import DeleteFlaggedUsersJob from './src/jobs/DeleteFlaggedUsers.job'
 
-const jobs = new Jobs({ identifier: 'app-jobs', queue: 'redis', jobsLocation: './src/jobs' })
+const jobs = new Jobs({ identifier: 'app-jobs', jobsLocation: './src/jobs', concurrentPerformers: 2, queuePriority: { important: 2 }, waitTimeIfEmptyRound: 10000 })
 
 await jobs.prepare()
 
 await DeleteFlaggedUsersJob.performLater({ count: 10 }) // Enqueue job to be performed later
 
+await jobs.run()
+
+// DeleteFlaggedUsersJob will be performed now
+
+// When app going down
+await jobs.stop()
 await jobs.release()
 ```
 
@@ -49,29 +55,48 @@ export default class DeleteFlaggedUsersJob extends BaseJob {
     Prefix to use to find the additional jobs like files, ex: `.mail` will find all files that start with `.mail` and load them as jobs.
   - **`location`** `string`
     Where to find the additional jobs, by default will look in the same folder as the main jobs.
+- **`concurrentPerformers`** `number` `default: 1`
+  How many jobs at the same time should the instance perform at the same time, useful to not have multiple apps running the jobs using their own memory.
+- **`jobsLocation`** `String`
+  Where all job files are, all files should prepend a `.job` prefix, ex: `Later.job.js`.
 - **`queue`** `string | QueueInterface` `Default: memory | test`
   Queue to use to enqueue jobs, by default if NODE_ENV is development memory(not recommended for production) will be used, if NODE_ENV is test the the test queue will be used.
 - **`queueOptions`** `Object`
   Any options that the queue constructor accepts
-- **`jobsLocation`** `String`
-  Where all job files are, all files should prepend a `.job` prefix, ex: `Later.job.js`.
+- **`queuePriority`** `{ [queueName]: number }`
+  Configure queues to have more priority over others, the higher number the higher the priority. ex: { important: 3 } in this case 3 important jobs will be processed for every default one.
+- **`waitTimeIfEmptyRound`** `number` `default: 1000`
+  In milliseconds how much to wait if there is nothing to perform, so the pulling is not so aggressive trying to get jobs to perform.
 
 ### Instance methods
 
 #### **`prepare`**
 
-Loads all jobs and connects to the redis instance.
+Loads all jobs and prepares the queue engine.
 
 #### **`release`**
 
-Releases the redis connection.
+Releases the queue engine.
+
+#### **`run`**
+
+Start dequeuing jobs and preform them.
+
+#### **`stop`**
+
+Stops performing jobs.
 
 ### Events
 
 Jobs will emit every time a job has been enqueued
 
 ```js
-jobs.on('enqueued', ({ jobItem }) => console.log(jobItem))
+jobs.on('*', (event) => console.log(event))
+jobs.on('enqueued', (event) => console.log(event))
+jobs.on('performed', (event) => console.log(event))
+jobs.on('retry', (event) => console.log(event))
+jobs.on('failed', (event) => console.log(event))
+jobs.on('error', (event) => console.log(event))
 ```
 
 ## BaseJob
@@ -109,75 +134,7 @@ How much time to wait before trying to run a job after a failure.
 
 #### **`queue`** `String` `default: default`
 
-Which queue use to enqueue this job, useful later when setting up the worker on how to prioritize queues.
-
-## Worker
-
-The `Worker` is what you use to run your enqueued jobs, it interfaces the same as `Jobs`, you can also use the `Worker` to prepare jobs and then start processing them.
-
-```js
-import { Worker } from '@universal-packages/background-jobs'
-
-import DeleteFlaggedUsersJob from './src/jobs/DeleteFlaggedUsers.job'
-
-const worker = new Worker({ identifier: 'app-jobs', jobsLocation: './src/jobs', concurrentPerformers: 2, queuePriority: { important: 2 }, waitTimeIfEmptyRound: 10000 })
-
-await worker.prepare() // Connects redis queue and load jobs.
-
-await DeleteFlaggedUsersJob.performLater({ count: 10 }) // Enqueue job to be performed later
-
-await worker.run()
-
-// DeleteFlaggedUsersJob will be performed now
-
-// When app going down
-await worker.stop()
-await worker.release()
-```
-
-## Options
-
-`Worker` takes the same options as [Jobs](#jobs).
-
-Additionally takes the following ones:
-
-- `concurrentPerformers` `number` `default: 1`
-  How many jobs at the same time should the instance perform at the same time, useful to not have multiple apps running the worker using their own memory.
-- `queuePriority` `{ [queueName]: number }`
-  Configure queues to have more priority over others, the higher number the higher the priority. ex: { important: 3 } in this case 3 important jobs will be processed for every default one.
-- `waitTimeIfEmptyRound` `number` `default: 1000`
-  In milliseconds how much to wait if there is nothing to perform, so the pulling is not so aggressive trying to get jobs to perform.
-
-### Instance methods
-
-#### **`prepare`**
-
-Loads all jobs and connects to the redis instance.
-
-#### **`run`**
-
-Start dequeuing jobs to be performed.
-
-#### **`stop`**
-
-Stop dequeuing jobs.
-
-#### **`release`**
-
-Releases the redis connection.
-
-### Events
-
-Worker will emit a series of events regarding the status of jobs being performed.
-
-```js
-jobs.on('*', (event) => console.log(event))
-jobs.on('enqueued', (event) => console.log(event))
-jobs.on('performed', (event) => console.log(event))
-jobs.on('retry', (event) => console.log(event))
-jobs.on('failed', (event) => console.log(event))
-jobs.on('error', (event) => console.log(event))
-```
+Which queue use to enqueue this job, useful later when setting up the jobs on how to prioritize queues.
 
 ## Typescript
 

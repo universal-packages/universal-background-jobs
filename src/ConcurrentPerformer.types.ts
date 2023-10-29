@@ -1,5 +1,4 @@
-import { JobsCollection, QueueInterface } from './Jobs.types'
-import { QueuePriority } from './Worker.types'
+import { JobsCollection, QueueInterface, QueuePriority } from './Jobs.types'
 
 export interface ConcurrentPerformerOptions {
   jobs: JobsCollection

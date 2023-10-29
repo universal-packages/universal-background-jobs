@@ -5,9 +5,12 @@ export type PerformLaterFunction = (data: Record<string, any>, options?: LaterOp
 
 export interface JobsOptions {
   additional?: Additional[]
+  concurrentPerformers?: number
+  jobsLocation?: string
   queue?: string | QueueInterface
   queueOptions?: Record<string, any>
-  jobsLocation?: string
+  queuePriority?: QueuePriority
+  waitTimeIfEmptyRound?: number
 }
 
 export interface JobItem {
@@ -55,4 +58,8 @@ export interface QueueInterface {
 
 export interface QueueInterfaceClass {
   new (...args: any[]): QueueInterface
+}
+
+export interface QueuePriority {
+  [queue: string]: number
 }
