@@ -115,7 +115,8 @@ export default class Jobs extends EventEmitter {
 
   private generateQueue(): QueueInterface {
     if (typeof this.options.queue === 'string') {
-      const AdapterModule = resolveAdapter<QueueInterfaceClass>(this.options.queue, {
+      const AdapterModule = resolveAdapter<QueueInterfaceClass>({
+        name: this.options.queue,
         domain: 'background-jobs',
         type: 'queue',
         internal: { memory: MemoryQueue, test: TestQueue }
