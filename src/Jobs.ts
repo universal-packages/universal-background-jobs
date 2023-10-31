@@ -1,11 +1,13 @@
-import { resolveAdapter } from '@universal-packages/adapter-resolver'
+import { gatherAdapters, resolveAdapter } from '@universal-packages/adapter-resolver'
 import { loadModules } from '@universal-packages/module-loader'
 import { CronJob } from 'cron'
 import EventEmitter from 'events'
 
 import BaseJob from './BaseJob'
+import BaseLoader from './BaseLoader'
 import ConcurrentPerformer from './ConcurrentPerformer'
 import { JobItem, JobsCollection, JobsOptions, LaterOptions, QueueInterface, QueueInterfaceClass } from './Jobs.types'
+import JobsLoader from './JobsLoader'
 import MemoryQueue from './MemoryQueue'
 import TestQueue from './TestQueue'
 
@@ -17,32 +19,45 @@ export default class Jobs extends EventEmitter {
 
   private readonly performers: ConcurrentPerformer[] = []
   private readonly cronJobs: CronJob[] = []
+  private readonly loaders: BaseLoader[] = []
 
   public constructor(options?: JobsOptions) {
     super()
     this.options = {
-      additional: [],
       concurrentPerformers: 1,
       jobsLocation: './src',
+      loaders: [],
       queue: process.env['NODE_ENV'] === 'test' ? 'test' : 'memory',
       queuePriority: {},
       ...options
     }
 
     this.queue = this.generateQueue()
+    this.loaders = this.generateLoaders()
   }
 
   public async prepare(): Promise<void> {
     this.queue.prepare && (await this.queue.prepare())
-    await this.loadJobs()
 
-    for (let i = 0; i < this.options.additional.length; i++) {
-      await this.loadJobs(this.options.additional[i].location || this.options.jobsLocation, this.options.additional[i].conventionPrefix)
+    for (let i = 0; i < this.loaders.length; i++) {
+      const loader = this.loaders[i]
+
+      await loader.prepare()
+
+      Object.assign(this.jobsCollection, loader.jobsCollection)
+
+      for (const queueName of loader.queueNames) this.queueNames.add(queueName)
     }
   }
 
   public async release(): Promise<void> {
     this.queue.release && (await this.queue.release())
+
+    for (let i = 0; i < this.loaders.length; i++) {
+      const loader = this.loaders[i]
+
+      await loader.release()
+    }
   }
 
   public async run(): Promise<void> {
@@ -87,25 +102,6 @@ export default class Jobs extends EventEmitter {
     await Promise.all(stopPromises)
   }
 
-  private async loadJobs(directory?: string, conventionPrefix = 'job'): Promise<void> {
-    const modules = await loadModules(directory || this.options.jobsLocation, { conventionPrefix })
-
-    for (let i = 0; i < modules.length; i++) {
-      const currentModule = modules[i]
-
-      if (currentModule.error) {
-        throw currentModule.error
-      } else {
-        const Job: typeof BaseJob = currentModule.exports
-        this.jobsCollection[Job.name] = currentModule.exports
-        this.queueNames.add(Job.queue)
-
-        Job['__performLater'] = this.performLater.bind(this)
-        Job['__srcFile'] = currentModule.location
-      }
-    }
-  }
-
   private async performLater(item: JobItem, options?: LaterOptions): Promise<void> {
     await this.queue.enqueue(item, item.queue, options)
 
@@ -125,6 +121,26 @@ export default class Jobs extends EventEmitter {
     } else {
       return this.options.queue
     }
+  }
+
+  private generateLoaders(): BaseLoader[] {
+    const loaderClasses = [
+      ...this.options.loaders,
+      ...gatherAdapters<typeof BaseLoader>({
+        domain: 'background-jobs',
+        type: 'loader',
+        internal: [JobsLoader]
+      })
+    ]
+    const loaders: BaseLoader[] = []
+    const performLater = this.performLater.bind(this)
+
+    for (let i = 0; i < loaderClasses.length; i++) {
+      const LoaderClass = loaderClasses[i]
+      loaders.push(new LoaderClass({ jobsLocation: this.options.jobsLocation, performLater }))
+    }
+
+    return loaders
   }
 
   private startCronJobs(): void {

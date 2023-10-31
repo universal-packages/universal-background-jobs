@@ -1,12 +1,13 @@
 import BaseJob from './BaseJob'
+import BaseLoader from './BaseLoader'
 
 export type JobStatus = 'waiting' | 'failed' | 'performed'
 export type PerformLaterFunction = (data: Record<string, any>, options?: LaterOptions) => Promise<void> | void
 
 export interface JobsOptions {
-  additional?: Additional[]
   concurrentPerformers?: number
   jobsLocation?: string
+  loaders?: (typeof BaseLoader)[]
   queue?: string | QueueInterface
   queueOptions?: Record<string, any>
   queuePriority?: QueuePriority
@@ -38,14 +39,14 @@ export interface Schedule {
   timeZone?: string
 }
 
-export interface Additional {
-  conventionPrefix: string
-  location?: string
-}
-
 export interface LaterOptions {
   at?: Date
   wait?: string
+}
+
+export interface LoaderOptions {
+  jobsLocation: string
+  performLater: PerformLaterFunction
 }
 
 export interface QueueInterface {

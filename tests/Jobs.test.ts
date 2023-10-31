@@ -1,6 +1,7 @@
 import { Measurement, sleep } from '@universal-packages/time-measurer'
 
 import { Jobs } from '../src'
+import BaseLoader from '../src/BaseLoader'
 import MemoryQueue from '../src/MemoryQueue'
 import TestQueue from '../src/TestQueue'
 import FailingJob from './__fixtures__/failing/Failing.job'
@@ -74,10 +75,15 @@ describe(Jobs, (): void => {
     expect(ExcellentJob.performJestFn).toHaveBeenCalledWith({ excellent: true })
   })
 
-  it('loads additional jobs extensions that may want to work as background jobs', async (): Promise<void> => {
+  it('loads additional jobs extensions that may want to work as background jobs throw loaders', async (): Promise<void> => {
     const performedMock = jest.fn()
+
+    class EmailLoader extends BaseLoader {
+      public static readonly conventionPrefix: string = 'email'
+    }
+
     const jobs = new Jobs({
-      additional: [{ conventionPrefix: 'email' }],
+      loaders: [EmailLoader],
       queue: 'memory',
       jobsLocation: './tests/__fixtures__/jobs',
       waitTimeIfEmptyRound: 0

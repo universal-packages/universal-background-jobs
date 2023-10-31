@@ -49,16 +49,12 @@ export default class DeleteFlaggedUsersJob extends BaseJob {
 
 ### Options
 
-- **`additional`** `Additional[]`
-  Additional jobs extensions that may want to work as background jobs
-  - **`conventionPrefix`** `string`
-    Prefix to use to find the additional jobs like files, ex: `.mail` will find all files that start with `.mail` and load them as jobs.
-  - **`location`** `string`
-    Where to find the additional jobs, by default will look in the same folder as the main jobs.
 - **`concurrentPerformers`** `number` `default: 1`
   How many jobs at the same time should the instance perform at the same time, useful to not have multiple apps running the jobs using their own memory.
 - **`jobsLocation`** `String`
   Where all job files are, all files should prepend a `.job` prefix, ex: `Later.job.js`.
+- **`loaders`** `Array`
+  Loaders to load additional Job-like classes that may want to work as a Job but with additional functionality, ex: `My.email.js`.
 - **`queue`** `string | QueueInterface` `Default: memory | test`
   Queue to use to enqueue jobs, by default if NODE_ENV is development memory(not recommended for production) will be used, if NODE_ENV is test the the test queue will be used.
 - **`queueOptions`** `Object`
@@ -106,7 +102,7 @@ Base interface to enable a JS class to be used as Job it will only require a per
 ```js
 import { BaseJob } from '@universal-packages/background-jobs'
 
-export default class DeleteFlagedUsersJob extends BaseJob {
+export default class DeleteFlaggedUsersJob extends BaseJob {
   static schedule = { cronTime: '* * * * * *', timeZone: 'America/Los_Angeles' }
   static maxRetries = 10
   static retryAfter = '10 minutes'
@@ -135,6 +131,50 @@ How much time to wait before trying to run a job after a failure.
 #### **`queue`** `String` `default: default`
 
 Which queue use to enqueue this job, useful later when setting up the jobs on how to prioritize queues.
+
+## BaseLoader
+
+Base interface to load additional Job-like classes that may want to work as a Job but with additional functionality, ex: `My.email.js`.
+
+```js
+import { BaseLoader } from '@universal-packages/background-jobs'
+
+export default class EmailLoader extends BaseLoader {
+  static conventionPrefix = 'email'
+
+  async prepare() {
+    await this.loadJobs()
+
+    const emailClasses = Object.values(this.jobsCollection)
+
+    for (const emailClass of emailClasses) {
+      emailClass['loaded'] = true
+    }
+  }
+}
+```
+
+### Static properties
+
+#### **`conventionPrefix`** `String`
+
+Prefix to use to load the classes, ex: `email` will load all classes that are prefixed before the extension with `email`, ex: `Welcome.email.js`.
+
+### Instance properties
+
+#### **`jobsCollection`** `Object`
+
+Collection of all jobs loaded with `await this.loadJobs()` using the convention prefix.
+
+### Instance methods
+
+#### **`prepare()`**
+
+Override this method to add additional functionality to the loaded jobs. You should always call `await this.loadJobs()` to load the jobs.
+
+#### **`release()`**
+
+Override this method in case your loader needs to release any resources from the jobs.
 
 ## Typescript
 
