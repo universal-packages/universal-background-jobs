@@ -1,9 +1,8 @@
 import { gatherAdapters, resolveAdapter } from '@universal-packages/adapter-resolver'
-import { loadModules } from '@universal-packages/module-loader'
+import { camelCase, pascalCase, snakeCase } from 'change-case'
 import { CronJob } from 'cron'
 import EventEmitter from 'events'
 
-import BaseJob from './BaseJob'
 import BaseLoader from './BaseLoader'
 import ConcurrentPerformer from './ConcurrentPerformer'
 import { JobItem, JobsCollection, JobsOptions, LaterOptions, QueueInterface, QueueInterfaceClass } from './Jobs.types'
@@ -27,6 +26,7 @@ export default class Jobs extends EventEmitter {
       concurrentPerformers: 1,
       jobsLocation: './src',
       loaders: [],
+      loaderOptions: {},
       queue: process.env['NODE_ENV'] === 'test' ? 'test' : 'memory',
       queuePriority: {},
       ...options
@@ -137,7 +137,25 @@ export default class Jobs extends EventEmitter {
 
     for (let i = 0; i < loaderClasses.length; i++) {
       const LoaderClass = loaderClasses[i]
-      loaders.push(new LoaderClass({ jobsLocation: this.options.jobsLocation, performLater }))
+
+      const baseName = LoaderClass.name
+      const possibleNameA = camelCase(baseName)
+      const possibleNameB = pascalCase(baseName)
+      const possibleNameC = snakeCase(baseName)
+      const baseName2 = baseName.replace(/Loader$/, '')
+      const possibleNameD = camelCase(baseName2)
+      const possibleNameE = pascalCase(baseName2)
+      const possibleNameF = snakeCase(baseName2)
+      const passedOptions =
+        this.options.loaderOptions[possibleNameA] ||
+        this.options.loaderOptions[possibleNameB] ||
+        this.options.loaderOptions[possibleNameC] ||
+        this.options.loaderOptions[possibleNameD] ||
+        this.options.loaderOptions[possibleNameE] ||
+        this.options.loaderOptions[possibleNameF] ||
+        {}
+
+      loaders.push(new LoaderClass({ jobsLocation: this.options.jobsLocation, performLater, passedOptions }))
     }
 
     return loaders

@@ -55,6 +55,19 @@ export default class DeleteFlaggedUsersJob extends BaseJob {
   Where all job files are, all files should prepend a `.job` prefix, ex: `Later.job.js`.
 - **`loaders`** `Array`
   Loaders to load additional Job-like classes that may want to work as a Job but with additional functionality, ex: `My.email.js`.
+- **`loaderOptions`** `Object`
+  Any options that a loader that is loaded via adapters (automatically based on its package name) may use to configure its loaded jobs. Named as the loader class name in any format for example `EmailLoader` could be `EmailLoader`, `email_loader` or `email`.
+
+  ```js
+  const jobs = new Jobs({
+    loaderOptions: {
+      email: {
+        engine: 'sendgrid'
+      }
+    }
+  })
+  ```
+
 - **`queue`** `string | QueueInterface` `Default: memory | test`
   Queue to use to enqueue jobs, by default if NODE_ENV is development memory(not recommended for production) will be used, if NODE_ENV is test the the test queue will be used.
 - **`queueOptions`** `Object`

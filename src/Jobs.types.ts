@@ -8,6 +8,7 @@ export interface JobsOptions {
   concurrentPerformers?: number
   jobsLocation?: string
   loaders?: (typeof BaseLoader)[]
+  loaderOptions?: Record<string, any>
   queue?: string | QueueInterface
   queueOptions?: Record<string, any>
   queuePriority?: QueuePriority
@@ -47,6 +48,7 @@ export interface LaterOptions {
 export interface LoaderOptions {
   jobsLocation: string
   performLater: PerformLaterFunction
+  passedOptions: Record<string, any>
 }
 
 export interface QueueInterface {
