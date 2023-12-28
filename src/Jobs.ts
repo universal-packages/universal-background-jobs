@@ -1,7 +1,7 @@
 import { gatherAdapters, resolveAdapter } from '@universal-packages/adapter-resolver'
+import { EventEmitter } from '@universal-packages/event-emitter'
 import { camelCase, pascalCase, snakeCase } from 'change-case'
 import { CronJob } from 'cron'
-import EventEmitter from 'events'
 
 import BaseLoader from './BaseLoader'
 import ConcurrentPerformer from './ConcurrentPerformer'
@@ -74,11 +74,7 @@ export default class Jobs extends EventEmitter {
         waitTimeIfEmptyRound: this.options.waitTimeIfEmptyRound || 1000
       })
 
-      performer.on('*', (...args: any[]): boolean => this.emit('*', ...args))
-      performer.on('performed', (...args: any[]): boolean => this.emit('performed', ...args))
-      performer.on('retry', (...args: any[]): boolean => this.emit('retry', ...args))
-      performer.on('failed', (...args: any[]): boolean => this.emit('failed', ...args))
-      performer.on('error', (...args: any[]): boolean => this.emit('error', ...args))
+      this.listenTo(performer, ['performed', 'retry', 'failed', 'error'])
 
       startPromises.push(performer.start())
 
@@ -95,9 +91,13 @@ export default class Jobs extends EventEmitter {
       const performer = this.performers[i]
 
       stopPromises.push(performer.stop())
+
+      this.stopListeningTo(performer)
     }
 
     this.stopCronJobs()
+
+    this.performers.length = 0
 
     await Promise.all(stopPromises)
   }
@@ -105,8 +105,7 @@ export default class Jobs extends EventEmitter {
   private async performLater(item: JobItem, options?: LaterOptions): Promise<void> {
     await this.queue.enqueue(item, item.queue, options)
 
-    this.emit('*', { event: 'enqueued', payload: { jobItem: item } })
-    this.emit('enqueued', { event: 'enqueued', payload: { jobItem: item } })
+    this.emit('enqueued', { payload: { jobItem: item } })
   }
 
   private generateQueue(): QueueInterface {
