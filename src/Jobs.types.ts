@@ -7,12 +7,16 @@ export type PerformLaterFunction = (data: Record<string, any>, options?: LaterOp
 export interface JobsOptions {
   concurrentPerformers?: number
   jobsLocation?: string
-  loaders?: (typeof BaseLoader)[]
+  loaders?: Loaders
   loaderOptions?: Record<string, any>
   queue?: string | QueueInterface
   queueOptions?: Record<string, any>
   queuePriority?: QueuePriority
   waitTimeIfEmptyRound?: number
+}
+
+export interface Loaders {
+  [name: string]: typeof BaseLoader
 }
 
 export interface JobItem {

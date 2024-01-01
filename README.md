@@ -53,7 +53,7 @@ export default class DeleteFlaggedUsersJob extends BaseJob {
   How many jobs at the same time should the instance perform at the same time, useful to not have multiple apps running the jobs using their own memory.
 - **`jobsLocation`** `String`
   Where all job files are, all files should prepend a `.job` prefix, ex: `Later.job.js`.
-- **`loaders`** `Array`
+- **`loaders`** `Object`
   Loaders to load additional Job-like classes that may want to work as a Job but with additional functionality, ex: `My.email.js`.
 - **`loaderOptions`** `Object`
   Any options that a loader that is loaded via adapters (automatically based on its package name) may use to configure its loaded jobs. Named as the loader class name in any format for example `EmailLoader` could be `EmailLoader`, `email_loader` or `email`.

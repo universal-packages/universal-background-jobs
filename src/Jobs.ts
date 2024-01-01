@@ -25,7 +25,7 @@ export default class Jobs extends EventEmitter {
     this.options = {
       concurrentPerformers: 1,
       jobsLocation: './src',
-      loaders: [],
+      loaders: {},
       loaderOptions: {},
       queue: process.env['NODE_ENV'] === 'test' ? 'test' : 'memory',
       queuePriority: {},
@@ -123,21 +123,24 @@ export default class Jobs extends EventEmitter {
   }
 
   private generateLoaders(): BaseLoader[] {
-    const loaderClasses = [
+    const allLoaders = {
       ...this.options.loaders,
       ...gatherAdapters<typeof BaseLoader>({
         domain: 'background-jobs',
         type: 'loader',
         internal: [JobsLoader]
       })
-    ]
+    }
+    const allLoadersNames = Object.keys(allLoaders)
+
     const loaders: BaseLoader[] = []
     const performLater = this.performLater.bind(this)
 
-    for (let i = 0; i < loaderClasses.length; i++) {
-      const LoaderClass = loaderClasses[i]
+    for (let i = 0; i < allLoadersNames.length; i++) {
+      const currentAllLoadersName = allLoadersNames[i]
+      const LoaderClass = allLoaders[currentAllLoadersName]
 
-      const baseName = LoaderClass.name
+      const baseName = currentAllLoadersName
       const possibleNameA = camelCase(baseName)
       const possibleNameB = pascalCase(baseName)
       const possibleNameC = snakeCase(baseName)
