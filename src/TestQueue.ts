@@ -1,18 +1,31 @@
 import { JobItem, LaterOptions, QueueInterface } from './Jobs.types'
 
-export default class TestQueue implements QueueInterface {
-  public static mock: any
+interface HistoryEntry {
+  item: JobItem
+  queue: string
+  options: LaterOptions
+}
 
-  public static setMock(mock: any): void {
-    this.mock = mock
+export default class TestQueue implements QueueInterface {
+  public static readonly enqueueRequests: HistoryEntry[] = []
+  public static readonly dequeueRequests: string[] = []
+
+  public static reset() {
+    TestQueue.enqueueRequests.length = 0
+    TestQueue.dequeueRequests.length = 0
   }
-  public clear(): void {}
 
   public enqueue(item: JobItem, queue: string, options?: LaterOptions): void {
-    if (TestQueue.mock) TestQueue.mock(item.name, queue, item.payload, options)
+    TestQueue.enqueueRequests.push({ item, queue, options })
   }
 
-  public dequeue(_queue: string): JobItem {
+  public clear(): void | Promise<void> {
+    // no-op
+  }
+
+  public dequeue(queue: string): JobItem {
+    TestQueue.dequeueRequests.push(queue)
+
     return
   }
 }

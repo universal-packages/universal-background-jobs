@@ -352,8 +352,7 @@ describe(Jobs, (): void => {
     expect(jobs).toMatchObject({ queue })
   })
 
-  it('can test job enqueueing with a mock', async (): Promise<void> => {
-    TestQueue.setMock(jest.fn())
+  it('can use test engine', async (): Promise<void> => {
     const jobs = new Jobs({ jobsLocation: './tests/__fixtures__/jobs' })
 
     await jobs.prepare()
@@ -365,7 +364,29 @@ describe(Jobs, (): void => {
     await jobs.stop()
     await jobs.release()
 
-    expect(TestQueue.mock).toHaveBeenCalledWith('GoodJob', 'default', { good: true }, undefined)
-    expect(TestQueue.mock).toHaveBeenCalledWith('ExcellentJob', 'default', { excellent: true }, undefined)
+    expect(TestQueue.enqueueRequests).toEqual([
+      {
+        item: {
+          payload: { good: true },
+          srcFile: expect.stringMatching(/.*jobs\/Good.job.ts/g),
+          name: 'GoodJob',
+          maxRetries: 5,
+          queue: 'default',
+          retryAfter: '1 minute'
+        },
+        queue: 'default'
+      },
+      {
+        item: {
+          payload: { excellent: true },
+          srcFile: expect.stringMatching(/.*jobs\/Excellent.job.ts/g),
+          name: 'ExcellentJob',
+          maxRetries: 5,
+          queue: 'default',
+          retryAfter: '1 minute'
+        },
+        queue: 'default'
+      }
+    ])
   })
 })
