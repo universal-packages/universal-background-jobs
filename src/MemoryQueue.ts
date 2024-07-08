@@ -1,6 +1,6 @@
 import ms from 'ms'
 
-import { JobItem, LaterOptions, QueueInterface } from './Jobs.types'
+import { JobItem, LaterOptions, QueueInterface } from './BackgroundJobs.types'
 
 export default class MemoryQueue implements QueueInterface {
   private static internalQueues: Record<string, { item: JobItem; notBefore: number }[]> = {}

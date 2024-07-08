@@ -1,4 +1,4 @@
-import { JobItem, LaterOptions, QueueInterface } from './Jobs.types'
+import { JobItem, LaterOptions, QueueInterface } from './BackgroundJobs.types'
 
 interface HistoryEntry {
   item: JobItem

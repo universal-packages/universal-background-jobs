@@ -1,6 +1,6 @@
 import { Measurement, sleep } from '@universal-packages/time-measurer'
 
-import { Jobs } from '../src'
+import { BackgroundJobs } from '../src'
 import BaseLoader from '../src/BaseLoader'
 import MemoryQueue from '../src/MemoryQueue'
 import TestQueue from '../src/TestQueue'
@@ -12,10 +12,10 @@ import PriorityAJob from './__fixtures__/priority/PriorityA.job'
 import PriorityBJob from './__fixtures__/priority/PriorityB.job'
 import ScheduledJob from './__fixtures__/schedule/Scheduled.job'
 
-describe(Jobs, (): void => {
+describe(BackgroundJobs, (): void => {
   it('loads jobs and enable them to enqueue jobs for later and process them via jobs', async (): Promise<void> => {
     const performedMock = jest.fn()
-    const jobs = new Jobs({ jobsLocation: './tests/__fixtures__/jobs', queue: 'memory', waitTimeIfEmptyRound: 0 })
+    const jobs = new BackgroundJobs({ jobsLocation: './tests/__fixtures__/jobs', queue: 'memory', waitTimeIfEmptyRound: 0 })
 
     await jobs.prepare()
     await jobs.queue.clear()
@@ -82,7 +82,7 @@ describe(Jobs, (): void => {
       public static readonly conventionPrefix: string = 'email'
     }
 
-    const jobs = new Jobs({
+    const jobs = new BackgroundJobs({
       loaders: { email: EmailLoader },
       queue: 'memory',
       jobsLocation: './tests/__fixtures__/jobs',
@@ -130,7 +130,7 @@ describe(Jobs, (): void => {
 
   it('prioritize by follow a queue property object', async (): Promise<void> => {
     const performedMock = jest.fn()
-    const jobs = new Jobs({ jobsLocation: './tests/__fixtures__/priority', queue: 'memory', waitTimeIfEmptyRound: 0, queuePriority: { low: 1, high: 3 } })
+    const jobs = new BackgroundJobs({ jobsLocation: './tests/__fixtures__/priority', queue: 'memory', waitTimeIfEmptyRound: 0, queuePriority: { low: 1, high: 3 } })
 
     await jobs.prepare()
     await jobs.queue.clear()
@@ -208,7 +208,7 @@ describe(Jobs, (): void => {
   it('retries if a job fails as per configured', async (): Promise<void> => {
     const retryMock = jest.fn()
     const failedMock = jest.fn()
-    const jobs = new Jobs({ jobsLocation: './tests/__fixtures__/failing', queue: 'memory', waitTimeIfEmptyRound: 0 })
+    const jobs = new BackgroundJobs({ jobsLocation: './tests/__fixtures__/failing', queue: 'memory', waitTimeIfEmptyRound: 0 })
 
     await jobs.prepare()
     await jobs.queue.clear()
@@ -308,7 +308,7 @@ describe(Jobs, (): void => {
   })
 
   it('schedules the job if self configured', async (): Promise<void> => {
-    const jobs = new Jobs({ jobsLocation: './tests/__fixtures__/schedule', queue: 'memory', waitTimeIfEmptyRound: 0 })
+    const jobs = new BackgroundJobs({ jobsLocation: './tests/__fixtures__/schedule', queue: 'memory', waitTimeIfEmptyRound: 0 })
 
     await jobs.prepare()
     await jobs.queue.clear()
@@ -325,7 +325,7 @@ describe(Jobs, (): void => {
 
   it('throws if a job has an error at loading', async (): Promise<void> => {
     let error: Error
-    const jobs = new Jobs({ jobsLocation: './tests/__fixtures__/load-error', queue: 'memory', waitTimeIfEmptyRound: 0 })
+    const jobs = new BackgroundJobs({ jobsLocation: './tests/__fixtures__/load-error', queue: 'memory', waitTimeIfEmptyRound: 0 })
 
     try {
       await jobs.prepare()
@@ -340,20 +340,20 @@ describe(Jobs, (): void => {
   })
 
   it('Sets adapters from string', async (): Promise<void> => {
-    const jobs = new Jobs({ queue: 'memory' })
+    const jobs = new BackgroundJobs({ queue: 'memory' })
 
     expect(jobs).toMatchObject({ queue: expect.any(MemoryQueue) })
   })
 
   it('Sets adapters from objects', async (): Promise<void> => {
     const queue = new TestQueue()
-    const jobs = new Jobs({ queue })
+    const jobs = new BackgroundJobs({ queue })
 
     expect(jobs).toMatchObject({ queue })
   })
 
   it('can use test engine', async (): Promise<void> => {
-    const jobs = new Jobs({ jobsLocation: './tests/__fixtures__/jobs' })
+    const jobs = new BackgroundJobs({ jobsLocation: './tests/__fixtures__/jobs' })
 
     await jobs.prepare()
     await jobs.queue.clear()

@@ -12,28 +12,28 @@ Redis queue background jobs enqueuer and jobs processor.
 npm install @universal-packages/background-jobs
 ```
 
-## Jobs
+## BackgroundJobs
 
 Interface to use to prepare everything, this is preparing the queue to be used to store jobs and be retrieved later, internally prepare all job files to be able to enqueue themselves using the function `performLater`.
 
 ```js
-import { Jobs } from '@universal-packages/background-jobs'
+import { BackgroundJobs } from '@universal-packages/background-jobs'
 
 import DeleteFlaggedUsersJob from './src/jobs/DeleteFlaggedUsers.job'
 
-const jobs = new Jobs({ identifier: 'app-jobs', jobsLocation: './src/jobs', concurrentPerformers: 2, queuePriority: { important: 2 }, waitTimeIfEmptyRound: 10000 })
+const backgroundJobs = new BackgroundJobs({ identifier: 'app-jobs', jobsLocation: './src/jobs', concurrentPerformers: 2, queuePriority: { important: 2 }, waitTimeIfEmptyRound: 10000 })
 
-await jobs.prepare()
+await backgroundJobs.prepare()
 
 await DeleteFlaggedUsersJob.performLater({ count: 10 }) // Enqueue job to be performed later
 
-await jobs.run()
+await backgroundJobs.run()
 
 // DeleteFlaggedUsersJob will be performed now
 
 // When app going down
-await jobs.stop()
-await jobs.release()
+await backgroundJobs.stop()
+await backgroundJobs.release()
 ```
 
 ```js
@@ -59,10 +59,10 @@ export default class DeleteFlaggedUsersJob extends BaseJob {
   Any options that a loader that is loaded via adapters (automatically based on its package name) may use to configure its loaded jobs. Named as the loader class name in any format for example `EmailLoader` could be `EmailLoader`, `email_loader` or `email`.
 
   ```js
-  const jobs = new Jobs({
+  const backgroundJobs = new BackgroundJobs({
     loaderOptions: {
       email: {
-        engine: 'sendgrid'
+        engine: 'gmail'
       }
     }
   })
@@ -100,12 +100,12 @@ Stops performing jobs.
 Jobs will emit every time a job has been enqueued
 
 ```js
-jobs.on('*', (event) => console.log(event))
-jobs.on('enqueued', (event) => console.log(event))
-jobs.on('performed', (event) => console.log(event))
-jobs.on('retry', (event) => console.log(event))
-jobs.on('failed', (event) => console.log(event))
-jobs.on('error', (event) => console.log(event))
+instance.on('*', (event) => console.log(event))
+instance.on('enqueued', (event) => console.log(event))
+instance.on('performed', (event) => console.log(event))
+instance.on('retry', (event) => console.log(event))
+instance.on('failed', (event) => console.log(event))
+instance.on('error', (event) => console.log(event))
 ```
 
 ## BaseJob

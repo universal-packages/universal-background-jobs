@@ -1,7 +1,7 @@
 import { loadModules } from '@universal-packages/module-loader'
 
 import BaseJob from './BaseJob'
-import { LoaderOptions } from './Jobs.types'
+import { LoaderOptions } from './BackgroundJobs.types'
 
 export default class BaseLoader {
   public static readonly conventionPrefix: string = 'job'

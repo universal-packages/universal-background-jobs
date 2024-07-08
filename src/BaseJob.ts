@@ -1,4 +1,4 @@
-import { JobItem, LaterOptions, PerformLaterFunction } from './Jobs.types'
+import { JobItem, LaterOptions, PerformLaterFunction } from './BackgroundJobs.types'
 
 export default class BaseJob<P = Record<string, any>> {
   public static schedule?: { cronTime: string; timeZone?: string }

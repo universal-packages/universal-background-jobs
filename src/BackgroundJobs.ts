@@ -5,12 +5,12 @@ import { CronJob } from 'cron'
 
 import BaseLoader from './BaseLoader'
 import ConcurrentPerformer from './ConcurrentPerformer'
-import { JobItem, JobsCollection, JobsOptions, LaterOptions, QueueInterface, QueueInterfaceClass } from './Jobs.types'
+import { JobItem, JobsCollection, JobsOptions, LaterOptions, QueueInterface, QueueInterfaceClass } from './BackgroundJobs.types'
 import JobsLoader from './JobsLoader'
 import MemoryQueue from './MemoryQueue'
 import TestQueue from './TestQueue'
 
-export default class Jobs extends EventEmitter {
+export default class BackgroundJobs extends EventEmitter {
   public readonly options: JobsOptions
   public readonly jobsCollection: JobsCollection = {}
   public readonly queueNames: Set<string> = new Set()
