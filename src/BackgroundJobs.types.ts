@@ -4,7 +4,7 @@ import BaseLoader from './BaseLoader'
 export type JobStatus = 'waiting' | 'failed' | 'performed'
 export type PerformLaterFunction = (data: Record<string, any>, options?: LaterOptions) => Promise<void> | void
 
-export interface JobsOptions {
+export interface BackgroundJobsOptions {
   concurrentPerformers?: number
   jobsLocation?: string
   loaders?: Loaders

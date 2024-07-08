@@ -3,15 +3,15 @@ import { EventEmitter } from '@universal-packages/event-emitter'
 import { camelCase, pascalCase, snakeCase } from 'change-case'
 import { CronJob } from 'cron'
 
+import { BackgroundJobsOptions, JobItem, JobsCollection, LaterOptions, QueueInterface, QueueInterfaceClass } from './BackgroundJobs.types'
 import BaseLoader from './BaseLoader'
 import ConcurrentPerformer from './ConcurrentPerformer'
-import { JobItem, JobsCollection, JobsOptions, LaterOptions, QueueInterface, QueueInterfaceClass } from './BackgroundJobs.types'
 import JobsLoader from './JobsLoader'
 import MemoryQueue from './MemoryQueue'
 import TestQueue from './TestQueue'
 
 export default class BackgroundJobs extends EventEmitter {
-  public readonly options: JobsOptions
+  public readonly options: BackgroundJobsOptions
   public readonly jobsCollection: JobsCollection = {}
   public readonly queueNames: Set<string> = new Set()
   public readonly queue: QueueInterface
@@ -20,7 +20,7 @@ export default class BackgroundJobs extends EventEmitter {
   private readonly cronJobs: CronJob[] = []
   private readonly loaders: BaseLoader[] = []
 
-  public constructor(options?: JobsOptions) {
+  public constructor(options?: BackgroundJobsOptions) {
     super()
     this.options = {
       concurrentPerformers: 1,
