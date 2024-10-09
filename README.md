@@ -4,7 +4,7 @@
 [![Testing](https://github.com/universal-packages/universal-background-jobs/actions/workflows/testing.yml/badge.svg)](https://github.com/universal-packages/universal-background-jobs/actions/workflows/testing.yml)
 [![codecov](https://codecov.io/gh/universal-packages/universal-background-jobs/branch/main/graph/badge.svg?token=CXPJSN8IGL)](https://codecov.io/gh/universal-packages/universal-background-jobs)
 
-Redis queue background jobs enqueuer and jobs processor.
+Background jobs enqueuer and jobs processor.
 
 ## Install
 
