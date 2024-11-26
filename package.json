@@ -19,7 +19,7 @@
     "@universal-packages/adapter-resolver": "^1.5.5",
     "@universal-packages/event-emitter": "^1.1.5",
     "@universal-packages/module-loader": "^1.0.12",
-    "@universal-packages/time-measurer": "^1.4.10",
+    "@universal-packages/time-measurer": "^1.5.0",
     "cron": "^3.1.1",
     "ms": "^2.1.3"
   },
